@@ -241,12 +241,12 @@ async function addAdmin(e) {
     const status = document.getElementById("add-status");
     if (res.ok) {
       document.getElementById("new-admin-id").value = "";
-      status.textContent = "✓ Admin added successfully";
+      status.textContent = "Admin added successfully";
       status.className = "form-feedback success";
       loadAdmins();
     } else {
       const error = await res.json();
-      status.textContent = `✗ ${error.detail || 'Error adding admin'}`;
+      status.textContent = `${error.detail || 'Error adding admin'}`;
       status.className = "form-feedback error";
     }
     setTimeout(() => { status.textContent = ""; status.className = "form-feedback"; }, 4000);

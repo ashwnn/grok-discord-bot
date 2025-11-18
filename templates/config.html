@@ -298,10 +298,10 @@ document.getElementById("config-form").addEventListener("submit", async (e) => {
 
   const status = document.getElementById("config-status");
   if (res.ok) {
-    status.textContent = "✓ Configuration saved";
+    status.textContent = "Configuration saved";
     status.style.color = "var(--color-text-success)";
   } else {
-    status.textContent = "✗ Error saving configuration";
+    status.textContent = "Error saving configuration";
     status.style.color = "var(--color-text-danger)";
   }
   setTimeout(() => { status.textContent = ""; }, 3000);

@@ -133,6 +133,7 @@ def create_app(settings: Settings) -> FastAPI:
                 "recent": recent,
                 "usage": usage,
                 "analytics": analytics,
+                "model_pricing": {"prompt": processor.prompt_price_per_m_token, "completion": processor.completion_price_per_m_token, "model": settings.grok_chat_model},
             },
         )
 
@@ -180,6 +181,7 @@ def create_app(settings: Settings) -> FastAPI:
                 "history": history,
                 "status_filter": status,
                 "command_type_filter": command_type,
+                "model_pricing": {"prompt": processor.prompt_price_per_m_token, "completion": processor.completion_price_per_m_token, "model": settings.grok_chat_model},
             },
         )
 
@@ -195,6 +197,7 @@ def create_app(settings: Settings) -> FastAPI:
                 "guild_id": guild_id,
                 "analytics": analytics,
                 "recent": recent_messages,
+                "model_pricing": {"prompt": processor.prompt_price_per_m_token, "completion": processor.completion_price_per_m_token, "model": settings.grok_chat_model},
             },
         )
 
@@ -336,6 +339,8 @@ def create_app(settings: Settings) -> FastAPI:
                 raise HTTPException(status_code=502, detail="Grok call failed")
             usage = result.usage or {}
             total_tokens = usage.get("total_tokens", 0) or 0
+            prompt_tokens = usage.get("prompt_tokens", 0) or 0
+            completion_tokens = usage.get("completion_tokens", 0) or 0
             if total_tokens:
                 await db.increment_daily_chat_usage(message["guild_id"], message["user_id"], total_tokens)
             
@@ -350,7 +355,7 @@ def create_app(settings: Settings) -> FastAPI:
                 prompt_tokens=usage.get("prompt_tokens"),
                 completion_tokens=usage.get("completion_tokens"),
                 total_tokens=usage.get("total_tokens"),
-                estimated_cost_usd=(total_tokens / 1_000_000 * processor.price_per_m_token) if total_tokens else None,
+                estimated_cost_usd=(prompt_tokens / 1_000_000.0 * processor.prompt_price_per_m_token + completion_tokens / 1_000_000.0 * processor.completion_price_per_m_token) if (prompt_tokens or completion_tokens) else None,
                 approved_by_admin_id=admin_id,
             )
             await _send_discord_message(

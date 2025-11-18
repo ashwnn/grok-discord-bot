@@ -24,7 +24,11 @@ class RequestProcessor:
         self.grok = grok
         self.settings = settings
         self.yaml_config = yaml_config or YAMLConfig()
-        self.price_per_m_token = 5.0
+    # Model pricing is in USD per 1,000,000 tokens.
+    # Prompt (input) tokens are charged at a different rate than completion (output) tokens.
+    # From the attached pricing, grok-3-mini appears to be $0.30 (input) and $0.50 (output) per M tokens.
+    self.prompt_price_per_m_token = 0.30
+    self.completion_price_per_m_token = 0.50
 
     async def _check_duplicate(self, guild_id: str, user_id: str, content: str, window_seconds: int) -> bool:
         async with self.db.conn.execute(
@@ -166,7 +170,12 @@ class RequestProcessor:
 
         usage = grok_result.usage or {}
         total_tokens = usage.get("total_tokens", 0) or 0
-        cost = (total_tokens / 1_000_000) * self.price_per_m_token if total_tokens else None
+        prompt_tokens = usage.get("prompt_tokens", 0) or 0
+        completion_tokens = usage.get("completion_tokens", 0) or 0
+        cost = (
+            (prompt_tokens / 1_000_000.0) * self.prompt_price_per_m_token
+            + (completion_tokens / 1_000_000.0) * self.completion_price_per_m_token
+        ) if (prompt_tokens or completion_tokens) else None
         log_id = await self.db.record_message(
             guild_id=guild_id,
             channel_id=channel_id,

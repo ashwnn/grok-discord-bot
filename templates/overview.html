@@ -71,6 +71,7 @@
     <h3>Estimated Cost</h3>
     <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">${{ "%.4f"|format(analytics.total_cost_usd) }}</p>
     <p class="muted text-sm">Total API usage cost</p>
+    <p class="muted text-xs">Model: {{ model_pricing.model }} | Input: ${{ "%.2f"|format(model_pricing.prompt) }}/M | Output: ${{ "%.2f"|format(model_pricing.completion) }}/M</p>
   </div>
 </div>
 

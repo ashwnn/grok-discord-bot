@@ -27,7 +27,7 @@
   <div class="card stat-card">
     <p class="stat-label">Estimated Cost</p>
     <p class="stat-value">${{ "%.4f"|format(analytics.total_cost_usd) }}</p>
-    <p class="stat-subtitle">Total API usage (grok-3-mini: $5/M tokens)</p>
+  <p class="stat-subtitle">Total API usage ({{ model_pricing.model }}: ${{ "%.2f"|format(model_pricing.prompt) }} / ${{ "%.2f"|format(model_pricing.completion) }} per M tokens)</p>
   </div>
 </div>
 
