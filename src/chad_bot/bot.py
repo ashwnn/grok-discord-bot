@@ -39,6 +39,64 @@ class ChadBot(commands.Bot):
         logger.info("Logged in as %s (%s)", self.user, self.user.id if self.user else "unknown")
         await self.change_presence(activity=discord.Game(name="/ask for questions"))
 
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User | discord.Member) -> None:
+        """Handle reaction additions. Delete bot messages when admins react with ❌."""
+        # Ignore reactions from bots
+        if user.bot:
+            return
+        
+        # Only handle ❌ emoji
+        if reaction.emoji != "❌":
+            return
+        
+        # Ensure message and guild exist
+        if not reaction.message.guild:
+            return
+        
+        # Check if the reacting user is an admin
+        guild_id = str(reaction.message.guild.id)
+        user_id = str(user.id)
+        
+        # Check if user is a Discord admin or saved admin
+        is_admin = False
+        if isinstance(user, discord.Member):
+            is_admin = user.guild_permissions and (
+                user.guild_permissions.administrator or user.guild_permissions.manage_guild
+            )
+        
+        if not is_admin:
+            is_admin = await self.db.is_admin(user_id, guild_id)
+        
+        if not is_admin:
+            return
+        
+        # Check if the message was sent by this bot
+        if reaction.message.author != self.user:
+            return
+        
+        try:
+            await reaction.message.delete()
+            logger.info(
+                "Message %s deleted by admin %s (%s) via ❌ reaction",
+                reaction.message.id,
+                user,
+                user_id 
+            )
+        except discord.Forbidden:
+            logger.warning(
+                "Missing permissions to delete message %s in channel %s",
+                reaction.message.id,
+                reaction.message.channel.id
+            )
+        except discord.NotFound:
+            logger.debug("Message %s was already deleted", reaction.message.id)
+        except Exception as e:  # noqa: BLE001
+            logger.error(
+                "Error deleting message %s: %s",
+                reaction.message.id,
+                str(e)
+            )
+
 
 def _guild_id(ctx: commands.Context) -> Optional[str]:
     return str(ctx.guild.id) if ctx.guild else None
