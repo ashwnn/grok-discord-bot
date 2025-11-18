@@ -17,19 +17,19 @@
     
     <div class="grid grid-cols-2">
       <div class="form-group">
-        <label for="ask_window_seconds">!ask Window (seconds)</label>
+        <label for="ask_window_seconds">/ask Window (seconds)</label>
         <input type="number" id="ask_window_seconds" name="ask_window_seconds" value="{{ config.ask_window_seconds }}" min="1" required>
       </div>
       <div class="form-group">
-        <label for="ask_max_per_window">!ask Max per Window</label>
+        <label for="ask_max_per_window">/ask Max per Window</label>
         <input type="number" id="ask_max_per_window" name="ask_max_per_window" value="{{ config.ask_max_per_window }}" min="1" required>
       </div>
       <div class="form-group">
-        <label for="image_window_seconds">!image Window (seconds)</label>
+        <label for="image_window_seconds">/image Window (seconds)</label>
         <input type="number" id="image_window_seconds" name="image_window_seconds" value="{{ config.image_window_seconds }}" min="1" required>
       </div>
       <div class="form-group">
-        <label for="image_max_per_window">!image Max per Window</label>
+        <label for="image_max_per_window">/image Max per Window</label>
         <input type="number" id="image_max_per_window" name="image_max_per_window" value="{{ config.image_max_per_window }}" min="1" required>
       </div>
     </div>
@@ -128,12 +128,13 @@
   <!-- System Prompt Section -->
   <section class="form-section">
     <div class="section-header">
-      <h3>System Prompt</h3>
-      <p class="section-description">Instructions for bot personality and behavior. Avoid slurs, explicit content, and graphic violence.</p>
+      <h3>Guild System Prompt</h3>
+      <p class="section-description">Per-guild instructions for bot personality and behavior. Leave empty to use global default from Messages configuration. Avoid slurs, explicit content, and graphic violence.</p>
     </div>
 
     <div class="form-group">
-      <textarea id="system_prompt" name="system_prompt" required></textarea>
+      <textarea id="system_prompt" name="system_prompt"></textarea>
+      <p class="form-hint">This guild-specific system prompt overrides the global system prompt. Clear this field to use the global default.</p>
     </div>
   </section>
 

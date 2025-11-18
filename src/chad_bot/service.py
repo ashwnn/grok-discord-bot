@@ -146,9 +146,11 @@ class RequestProcessor:
             reply = self.yaml_config.format_reply(self.yaml_config.get_message("pending_approval_chat"))
             return ProcessResult(reply=reply, log_id=log_id, status="pending_approval")
 
+        # Use guild-specific system prompt, fallback to YAML config if not set
+        system_prompt = config.system_prompt if config.system_prompt else self.yaml_config.get_system_prompt()
         try:
             grok_result = await self.grok.chat(
-                system_prompt=self.yaml_config.get_system_prompt() or config.system_prompt,
+                system_prompt=system_prompt,
                 user_content=content,
                 temperature=config.temperature,
                 max_tokens=config.max_completion_tokens,

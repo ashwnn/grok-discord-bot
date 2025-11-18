@@ -4,8 +4,8 @@
 
 * Provide a Discord bot that:
 
-  * Responds to `!ask` using Grok chat completions.
-  * Responds to `!image` using Grok image generation.
+  * Responds to `/ask` using Grok chat completions.
+  * Responds to `/image` using Grok image generation.
   * Uses a sarcastic, rude personality configured via a system prompt, without hate speech or explicit content.
   * Protects Grok credits via rate limits, token budgets, and spam filtering.
   * Supports an optional auto approve mode where admins must approve or override replies before they are sent.
@@ -32,7 +32,7 @@
 
 * End user
 
-  * Regular Discord member using `!ask` and `!image`.
+  * Regular Discord member using `/ask` and `/image`.
 
 * Guild admin
 
@@ -45,19 +45,19 @@
 
 ### 2.2 Primary use cases
 
-1. User runs `!ask`
+1. User runs `/ask`
 
    * Bot validates input, checks limits.
    * If auto approve off, calls Grok and replies.
    * If auto approve on, queues for admin.
 
-2. User runs `!image`
+2. User runs `/image`
 
-   * Similar to `!ask`, but uses image generation and image budgets.
+   * Similar to `/ask`, but uses image generation and image budgets.
 
 3. Admin enables auto approve for a guild
 
-   * All future non admin messages using `!ask` and `!image` get queued.
+   * All future non admin messages using `/ask` and `/image` get queued.
 
 4. Admin reviews queue
 
@@ -94,8 +94,8 @@
 
 * Grok API
 
-  * Chat completions endpoint for `!ask`.
-  * Image generation endpoint for `!image`.
+  * Chat completions endpoint for `/ask`.
+  * Image generation endpoint for `/image`.
 
 ### 3.2 Process model
 
@@ -122,7 +122,7 @@ The spec assumes both layers access a common abstraction over the database.
 
 * Command prefix: `!`
 
-* `!ask <text>`
+* `/ask <text>`
 
   * Required free text argument.
   * Bot responds with a text answer.
@@ -134,11 +134,11 @@ The spec assumes both layers access a common abstraction over the database.
 
     * Bot queues the message and optionally sends a “pending approval” notification.
 
-* `!image <prompt>`
+* `/image <prompt>`
 
   * Required free text prompt.
   * Bot responds with an embedded image (first URL from Grok).
-  * Same auto approve semantics as `!ask`.
+  * Same auto approve semantics as `/ask`.
 
 * Non command messages
 
@@ -169,7 +169,7 @@ The spec assumes both layers access a common abstraction over the database.
 
 ### 4.2 Input validation and spam filtering
 
-For both `!ask` and `!image`:
+For both `/ask` and `/image`:
 
 * Empty or whitespace only input:
 
@@ -208,12 +208,12 @@ For both `!ask` and `!image`:
 
 Per guild configurable defaults:
 
-* `!ask` per user:
+* `/ask` per user:
 
   * Window size (seconds) and maximum calls per window.
   * Default: 5 calls per 60 seconds.
 
-* `!image` per user:
+* `/image` per user:
 
   * Window size (seconds) and maximum calls per window.
   * Default: 3 calls per 300 seconds.
@@ -312,7 +312,7 @@ For every image request:
 #### 4.7.1 Auto approve flag
 
 * Each guild has a configuration flag `auto_approve_enabled`.
-* When `true`, all non admin `!ask` and `!image` commands are queued for approval.
+* When `true`, all non admin `/ask` and `/image` commands are queued for approval.
 * Admins can bypass auto approve if desired, controlled by a separate `admin_bypass_auto_approve` flag.
 
 #### 4.7.2 Pending message creation
@@ -368,7 +368,7 @@ For each entry, admin can choose:
     * Sets status to `rejected`, decision to `reject`, records reason.
     * Sends a short rejection message in the original Discord channel, not including any sensitive details.
 
-Auto approve applies to both `!ask` and `!image`. For `!image`, a manual approval might be a custom text reply or linking an image the admin chooses.
+Auto approve applies to both `/ask` and `/image`. For `/image`, a manual approval might be a custom text reply or linking an image the admin chooses.
 
 ---
 
@@ -394,7 +394,7 @@ Auto approve applies to both `!ask` and `!image`. For `!image`, a manual approva
 
   * Target response time:
 
-    * For normal `!ask` and `!image` without auto approve: under a few seconds assuming Grok latency is normal.
+    * For normal `/ask` and `/image` without auto approve: under a few seconds assuming Grok latency is normal.
   * Web UI pages should render within a second for typical data volumes.
 
 * Reliability
@@ -552,11 +552,11 @@ Key columns
 
 * `grok_response_content`
 
-  * Text answer for `!ask`.
+  * Text answer for `/ask`.
 
 * `grok_image_urls`
 
-  * JSON array of URLs for `!image`.
+  * JSON array of URLs for `/image`.
 
 * `prompt_tokens`, `completion_tokens`, `total_tokens`.
 
@@ -1013,7 +1013,7 @@ Bot must validate that the admin user has rights to the guild before acting.
 
 * Integration tests:
 
-  * Full cycle `!ask` and `!image` in normal mode.
+  * Full cycle `/ask` and `/image` in normal mode.
   * Auto approve workflow: pending to Grok approval, manual approval, rejection.
   * Web UI configuration updates reflected in bot behavior.
 

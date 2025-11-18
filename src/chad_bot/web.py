@@ -321,9 +321,11 @@ def create_app(settings: Settings) -> FastAPI:
     async def _process_grok(message: Dict[str, Any], admin_id: str) -> Dict[str, Any]:
         cfg = await db.get_guild_config(message["guild_id"])
         if message["command_type"] == "ask":
+            # Use guild-specific system prompt, fallback to YAML config if not set
+            system_prompt = cfg.system_prompt if cfg.system_prompt else yaml_config.get_system_prompt()
             try:
                 result = await grok.chat(
-                    system_prompt=yaml_config.get_system_prompt() or cfg.system_prompt,
+                    system_prompt=system_prompt,
                     user_content=message["user_content"],
                     temperature=cfg.temperature,
                     max_tokens=cfg.max_completion_tokens,
