@@ -3,214 +3,335 @@
 {% block title %}Bot Messages Configuration - Chad Bot Admin{% endblock %}
 
 {% block content %}
-<h2>Bot Messages & Settings</h2>
-<p class="muted">Configure all bot messages, system prompt, and reply formatting</p>
-
-<div class="card" style="margin-top: 24px;">
-  <h3>Bot Settings</h3>
-  <div class="form-group">
-    <label for="reply_prefix">Reply Prefix (optional)</label>
-    <input type="text" id="reply_prefix" placeholder="Text to add before every bot reply">
-    <small class="muted">Leave empty for no prefix</small>
-  </div>
-  <div class="form-group">
-    <label for="reply_suffix">Reply Suffix (optional)</label>
-    <input type="text" id="reply_suffix" placeholder="Text to add after every bot reply">
-    <small class="muted">Leave empty for no suffix</small>
-  </div>
+<div class="page-header">
+  <h2>Bot Messages & Settings</h2>
+  <p class="page-subtitle">Configure all bot messages, system prompt, and reply formatting</p>
 </div>
 
-<div class="card" style="margin-top: 24px;">
-  <h3>System Prompt</h3>
-  <p class="muted">This defines the AI's personality and behavior</p>
-  <div class="form-group">
-    <label for="system_prompt">System Prompt</label>
-    <textarea id="system_prompt" rows="8" placeholder="Enter the system prompt..."></textarea>
-    <small class="muted">Be specific about tone, content restrictions, and desired behavior</small>
+<!-- System Prompt & Bot Settings -->
+<form id="messages-form" class="form-container">
+  <!-- System Settings Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Bot Settings</h3>
+      <p class="section-description">Global reply formatting options</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="reply_prefix">Reply Prefix (optional)</label>
+        <input type="text" id="reply_prefix" placeholder="Text to add before every bot reply">
+        <p class="form-hint">Leave empty for no prefix</p>
+      </div>
+      <div class="form-group">
+        <label for="reply_suffix">Reply Suffix (optional)</label>
+        <input type="text" id="reply_suffix" placeholder="Text to add after every bot reply">
+        <p class="form-hint">Leave empty for no suffix</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- System Prompt Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>System Prompt</h3>
+      <p class="section-description">Defines the AI's personality and behavior</p>
+    </div>
+
+    <div class="form-group">
+      <textarea id="system_prompt" rows="8" placeholder="Enter the system prompt..."></textarea>
+      <p class="form-hint">Be specific about tone, content restrictions, and desired behavior</p>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Error Messages Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Error & Validation Messages</h3>
+      <p class="section-description">Messages shown to users when validation fails</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="msg_empty_input">Empty Input</label>
+        <input type="text" id="msg_empty_input" placeholder="Message for empty input">
+      </div>
+      <div class="form-group">
+        <label for="msg_too_short">Too Short</label>
+        <input type="text" id="msg_too_short" placeholder="Message for too short input">
+      </div>
+      <div class="form-group">
+        <label for="msg_trivial_input">Trivial Input</label>
+        <input type="text" id="msg_trivial_input" placeholder="Message for trivial input (hi, hello, test)">
+      </div>
+      <div class="form-group">
+        <label for="msg_gibberish">Gibberish</label>
+        <input type="text" id="msg_gibberish" placeholder="Message for gibberish input">
+      </div>
+      <div class="form-group">
+        <label for="msg_too_long">Too Long</label>
+        <input type="text" id="msg_too_long" placeholder="Message for too long input">
+        <p class="form-hint">Use {max_chars} for character limit</p>
+      </div>
+      <div class="form-group">
+        <label for="msg_duplicate">Duplicate</label>
+        <input type="text" id="msg_duplicate" placeholder="Message for duplicate requests">
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Rate Limiting Messages Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Rate Limiting Messages</h3>
+      <p class="section-description">Messages shown when users hit rate limits</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="msg_rate_limit_chat">Chat Rate Limit</label>
+        <input type="text" id="msg_rate_limit_chat" placeholder="Message when chat rate limit hit">
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Budget Messages Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Budget Messages</h3>
+      <p class="section-description">Messages shown when budgets are exhausted</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="msg_chat_budget_user">User Chat Budget Exhausted</label>
+        <input type="text" id="msg_chat_budget_user" placeholder="Message when user chat budget exhausted">
+      </div>
+      <div class="form-group">
+        <label for="msg_chat_budget_guild">Guild Chat Budget Exhausted</label>
+        <input type="text" id="msg_chat_budget_guild" placeholder="Message when guild chat budget exhausted">
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Workflow Messages Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Workflow Messages</h3>
+      <p class="section-description">Messages for approval workflow states</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="msg_pending_approval_chat">Pending Approval</label>
+        <input type="text" id="msg_pending_approval_chat" placeholder="Message for pending chat approval">
+      </div>
+      <div class="form-group">
+        <label for="msg_manual_reply_default">Default Manual Reply</label>
+        <input type="text" id="msg_manual_reply_default" placeholder="Default admin manual reply">
+      </div>
+      <div class="form-group">
+        <label for="msg_rejection_default">Default Rejection</label>
+        <input type="text" id="msg_rejection_default" placeholder="Default rejection message">
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Success & Error Messages Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>System Error Messages</h3>
+      <p class="section-description">Messages for system-level errors</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="msg_ai_error_chat">AI Chat Service Error</label>
+        <input type="text" id="msg_ai_error_chat" placeholder="Message when AI chat service fails">
+      </div>
+      <div class="form-group">
+        <label for="msg_dm_not_allowed">DM Not Allowed</label>
+        <input type="text" id="msg_dm_not_allowed" placeholder="Message when command used in DM">
+      </div>
+      <div class="form-group">
+        <label for="msg_invalid_input">Invalid Input</label>
+        <input type="text" id="msg_invalid_input" placeholder="Generic invalid input message">
+      </div>
+      <div class="form-group">
+        <label for="msg_unknown_error">Unknown Error</label>
+        <input type="text" id="msg_unknown_error" placeholder="Generic error message">
+      </div>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save All Changes</button>
+    <button type="button" class="btn btn-secondary" onclick="loadMessages()">Reset to Current Values</button>
+    <div id="status-message"></div>
   </div>
-</div>
-
-<div class="card" style="margin-top: 24px;">
-  <h3>Error & Validation Messages</h3>
-  <div class="messages-grid">
-    <div class="form-group">
-      <label for="msg_empty_input">Empty Input</label>
-      <input type="text" id="msg_empty_input" placeholder="Message for empty input">
-    </div>
-    <div class="form-group">
-      <label for="msg_too_short">Too Short</label>
-      <input type="text" id="msg_too_short" placeholder="Message for too short input">
-    </div>
-    <div class="form-group">
-      <label for="msg_trivial_input">Trivial Input</label>
-      <input type="text" id="msg_trivial_input" placeholder="Message for trivial input (hi, hello, test)">
-    </div>
-    <div class="form-group">
-      <label for="msg_gibberish">Gibberish</label>
-      <input type="text" id="msg_gibberish" placeholder="Message for gibberish input">
-    </div>
-    <div class="form-group">
-      <label for="msg_too_long">Too Long</label>
-      <input type="text" id="msg_too_long" placeholder="Message for too long input">
-      <small class="muted">Use {max_chars} for character limit</small>
-    </div>
-    <div class="form-group">
-      <label for="msg_duplicate">Duplicate</label>
-      <input type="text" id="msg_duplicate" placeholder="Message for duplicate requests">
-    </div>
-  </div>
-</div>
-
-<div class="card" style="margin-top: 24px;">
-  <h3>Rate Limiting Messages</h3>
-  <div class="messages-grid">
-    <div class="form-group">
-      <label for="msg_rate_limit_chat">Chat Rate Limit</label>
-      <input type="text" id="msg_rate_limit_chat" placeholder="Message when chat rate limit hit">
-    </div>
-  </div>
-</div>
-
-<div class="card" style="margin-top: 24px;">
-  <h3>Budget Messages</h3>
-  <div class="messages-grid">
-    <div class="form-group">
-      <label for="msg_chat_budget_user">User Chat Budget</label>
-      <input type="text" id="msg_chat_budget_user" placeholder="Message when user chat budget exhausted">
-    </div>
-    <div class="form-group">
-      <label for="msg_chat_budget_guild">Guild Chat Budget</label>
-      <input type="text" id="msg_chat_budget_guild" placeholder="Message when guild chat budget exhausted">
-    </div>
-  </div>
-</div>
-
-<div class="card" style="margin-top: 24px;">
-  <h3>Workflow Messages</h3>
-  <div class="messages-grid">
-    <div class="form-group">
-      <label for="msg_pending_approval_chat">Pending Approval</label>
-      <input type="text" id="msg_pending_approval_chat" placeholder="Message for pending chat approval">
-    </div>
-    <div class="form-group">
-      <label for="msg_manual_reply_default">Default Manual Reply</label>
-      <input type="text" id="msg_manual_reply_default" placeholder="Default admin manual reply">
-    </div>
-    <div class="form-group">
-      <label for="msg_rejection_default">Default Rejection</label>
-      <input type="text" id="msg_rejection_default" placeholder="Default rejection message">
-    </div>
-  </div>
-</div>
-
-<div class="card" style="margin-top: 24px;">
-  <h3>Success & Error Messages</h3>
-  <div class="messages-grid">
-    <div class="form-group">
-      <label for="msg_ai_error_chat">AI Chat Error</label>
-      <input type="text" id="msg_ai_error_chat" placeholder="Message when AI chat service fails">
-    </div>
-    <div class="form-group">
-      <label for="msg_dm_not_allowed">DM Not Allowed</label>
-      <input type="text" id="msg_dm_not_allowed" placeholder="Message when command used in DM">
-    </div>
-    <div class="form-group">
-      <label for="msg_invalid_input">Invalid Input</label>
-      <input type="text" id="msg_invalid_input" placeholder="Generic invalid input message">
-    </div>
-    <div class="form-group">
-      <label for="msg_unknown_error">Unknown Error</label>
-      <input type="text" id="msg_unknown_error" placeholder="Generic error message">
-    </div>
-  </div>
-</div>
-
-<div class="actions" style="margin-top: 24px;">
-  <button class="btn-primary" onclick="saveMessages()">Save All Changes</button>
-  <button class="btn-secondary" onclick="loadMessages()">Reset to Current Values</button>
-</div>
-
-<div id="status-message" style="margin-top: 16px;"></div>
+</form>
 
 <style>
-  .messages-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
+  .page-header {
+    margin-bottom: 32px;
   }
-  
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .form-container {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid var(--color-border-base);
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .section-header h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+  }
+
+  .section-description {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
   .form-group {
     display: flex;
     flex-direction: column;
   }
-  
+
   .form-group label {
-    font-weight: 600;
-    margin-bottom: 4px;
-    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
   }
-  
+
   .form-group input,
   .form-group textarea {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-base);
+    border-radius: 6px;
     font-family: inherit;
-    font-size: 0.875rem;
+    font-size: 0.95rem;
   }
-  
+
   .form-group textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 120px;
+    font-family: 'Courier New', monospace;
   }
-  
-  .form-group small {
-    margin-top: 4px;
-    font-size: 0.75rem;
+
+  .form-hint {
+    margin: 4px 0 0 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
   }
-  
-  .actions {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .btn-primary, .btn-secondary {
-    padding: 10px 20px;
+
+  .section-divider {
+    margin: 32px 0;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.875rem;
+    border-top: 1px solid var(--color-border-base);
   }
-  
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border-base);
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+
   .btn-primary {
-    background: #2563eb;
+    background: var(--color-blue-500);
     color: white;
   }
-  
+
   .btn-primary:hover {
-    background: #1d4ed8;
+    background: var(--color-blue-600);
   }
-  
+
   .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--color-bg-app);
+    color: var(--color-text-base);
+    border: 1px solid var(--color-border-base);
   }
-  
+
   .btn-secondary:hover {
     background: #e5e7eb;
   }
-  
-  .card {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+  #status-message {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0;
   }
-  
-  .card h3 {
-    margin-top: 0;
-    margin-bottom: 16px;
+
+  #status-message.success {
+    color: #059669;
+  }
+
+  #status-message.error {
+    color: #dc2626;
+  }
+
+  @media (max-width: 768px) {
+    .grid-cols-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
   }
 </style>
 
@@ -218,9 +339,15 @@
   let currentConfig = {};
 
   async function loadMessages() {
+    setAdminUserId();
+    if (!adminHeaders) {
+      alert("Please set your Discord user ID first");
+      return;
+    }
+
     try {
       const response = await fetch('/api/yaml-config', {
-        headers: window.adminHeaders || {}
+        headers: adminHeaders || {}
       });
       const data = await response.json();
       currentConfig = data;
@@ -247,7 +374,14 @@
     }
   }
 
-  async function saveMessages() {
+  async function saveMessages(e) {
+    e.preventDefault();
+    setAdminUserId();
+    if (!adminHeaders) {
+      alert("Please set your Discord user ID first");
+      return;
+    }
+
     const updates = {
       'bot_settings.reply_prefix': document.getElementById('reply_prefix').value,
       'bot_settings.reply_suffix': document.getElementById('reply_suffix').value,
@@ -272,7 +406,7 @@
     try {
       const response = await fetch('/api/yaml-config', {
         method: 'POST',
-        headers: window.adminHeaders || {'Content-Type': 'application/json'},
+        headers: adminHeaders || {'Content-Type': 'application/json'},
         body: JSON.stringify({ updates })
       });
       
@@ -291,24 +425,17 @@
   function showStatus(message, type) {
     const statusDiv = document.getElementById('status-message');
     statusDiv.textContent = message;
-    statusDiv.style.padding = '12px 16px';
-    statusDiv.style.borderRadius = '4px';
-    statusDiv.style.fontWeight = '600';
-    
-    if (type === 'success') {
-      statusDiv.style.background = '#d1fae5';
-      statusDiv.style.color = '#065f46';
-    } else {
-      statusDiv.style.background = '#fee2e2';
-      statusDiv.style.color = '#991b1b';
-    }
+    statusDiv.className = type;
     
     setTimeout(() => {
       statusDiv.textContent = '';
-      statusDiv.style.padding = '0';
+      statusDiv.className = '';
     }, 5000);
   }
 
+  // Attach event listener
+  document.getElementById('messages-form').addEventListener('submit', saveMessages);
+  
   // Load messages on page load
   document.addEventListener('DOMContentLoaded', loadMessages);
 </script>

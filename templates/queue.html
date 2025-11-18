@@ -2,18 +2,22 @@
 {% block title %}Approval Queue - Grok Discord Bot Admin{% endblock %}
 
 {% block content %}
-<div class="card mb-6">
+<div class="page-header">
   <h2>Approval Queue</h2>
-  <p class="muted">Review and approve pending requests</p>
+  <p class="page-subtitle">Review and approve pending requests</p>
 </div>
 
 {% if pending | length == 0 %}
-<div class="card">
-  <p class="muted text-center">No pending approvals</p>
+<div class="card empty-state">
+  <p class="muted text-center">✓ No pending approvals</p>
 </div>
 {% else %}
+<div class="queue-info">
+  <p><strong>{{ pending | length }}</strong> pending request{{ 's' if pending | length != 1 else '' }}</p>
+</div>
+
 <div class="card">
-  <table>
+  <table class="table queue-table">
     <thead>
       <tr>
         <th>Time</th>
@@ -25,9 +29,9 @@
     </thead>
     <tbody>
       {% for item in pending %}
-      <tr data-id="{{ item.id }}">
-        <td>{{ item.created_at | truncate(16, True, '') }}</td>
-        <td>{{ item.user_id }}</td>
+      <tr class="queue-row" data-id="{{ item.id }}">
+        <td class="text-sm muted">{{ item.created_at | truncate(16, True, '') }}</td>
+        <td class="text-sm">{{ item.user_id }}</td>
         <td>
           {% if item.command_type == 'ask' %}
           <span class="pill">Chat</span>
@@ -35,23 +39,23 @@
           <span class="pill">Image</span>
           {% endif %}
         </td>
-        <td title="{{ item.user_content }}">{{ item.user_content[:80] }}</td>
+        <td class="text-sm preview-cell">{{ item.user_content[:80] }}</td>
         <td>
-          <div class="flex-row" style="gap: 4px;">
-            <button class="btn" onclick="expand(this)">Details</button>
-          </div>
+          <button class="btn-link" onclick="expandItem(this)">Details</button>
         </td>
       </tr>
-      <tr id="details-{{ item.id }}" style="display: none;">
+      <tr class="details-row" style="display: none;">
         <td colspan="5">
-          <div style="padding: 16px; background: var(--color-bg-app); border-radius: 4px;">
-            <h4>Full Request</h4>
-            <p style="white-space: pre-wrap; word-break: break-word;">{{ item.user_content }}</p>
+          <div class="details-panel">
+            <div class="request-content">
+              <h4>Full Request</h4>
+              <p class="content-text">{{ item.user_content }}</p>
+            </div>
             
-            <div class="btn-group" style="margin-top: 16px;">
-              <button class="btn success" onclick="approve({{ item.id }}, 'grok')">Approve via Grok</button>
-              <button class="btn secondary" onclick="manual({{ item.id }})">Approve with Manual Reply</button>
-              <button class="btn danger" onclick="reject({{ item.id }})">Reject</button>
+            <div class="action-buttons">
+              <button class="btn btn-success" onclick="approve({{ item.id }}, 'grok')">✓ Approve via Grok</button>
+              <button class="btn btn-secondary" onclick="manual({{ item.id }})">👤 Manual Reply</button>
+              <button class="btn btn-danger" onclick="reject({{ item.id }})">✗ Reject</button>
             </div>
           </div>
         </td>
@@ -62,17 +66,182 @@
 </div>
 {% endif %}
 
+<style>
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .queue-info {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--color-bg-app);
+    border-radius: 6px;
+  }
+
+  .queue-info p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .queue-info strong {
+    font-weight: 700;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table thead th {
+    text-align: left;
+    padding: 12px 12px;
+    border-bottom: 2px solid var(--color-border-base);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .queue-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border-base);
+  }
+
+  .queue-row:hover {
+    background: var(--color-bg-app);
+  }
+
+  .preview-cell {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .text-sm {
+    font-size: 0.875rem;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--color-blue-500);
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0;
+    font-size: 0.875rem;
+  }
+
+  .btn-link:hover {
+    text-decoration: underline;
+  }
+
+  .details-row {
+    background: var(--color-bg-app);
+  }
+
+  .details-panel {
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .request-content h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .content-text {
+    margin: 0;
+    padding: 12px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid var(--color-blue-500);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .btn-success {
+    background: #10b981;
+    color: white;
+  }
+
+  .btn-success:hover {
+    background: #059669;
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #4b5563;
+  }
+
+  .btn-danger {
+    background: #ef4444;
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background: #dc2626;
+  }
+</style>
+
 <script>
-function expand(button) {
+function expandItem(button) {
   const row = button.closest('tr');
-  const id = row.dataset.id;
-  const detailsRow = document.getElementById(`details-${id}`);
-  if (detailsRow.style.display === 'none') {
-    detailsRow.style.display = 'table-row';
-    button.textContent = 'Hide';
-  } else {
-    detailsRow.style.display = 'none';
-    button.textContent = 'Details';
+  const detailsRow = row.nextElementSibling;
+  
+  if (detailsRow && detailsRow.classList.contains('details-row')) {
+    if (detailsRow.style.display === 'none') {
+      detailsRow.style.display = 'table-row';
+      button.textContent = 'Hide';
+    } else {
+      detailsRow.style.display = 'none';
+      button.textContent = 'Details';
+    }
   }
 }
 

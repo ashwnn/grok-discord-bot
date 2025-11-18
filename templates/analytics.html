@@ -6,77 +6,182 @@
 {% endblock %}
 
 {% block content %}
-<div class="card mb-6">
+<div class="page-header">
   <h2>Analytics</h2>
-  <p class="muted">Guild usage and request breakdown</p>
+  <p class="page-subtitle">Guild usage and request breakdown</p>
 </div>
 
-<div class="grid">
-  <div class="card">
-    <h3>Total Requests</h3>
-    <p style="font-size: 1.875rem; font-weight: 700; margin: 16px 0;">{{ analytics.status_counts.values() | sum(attribute=0) | default(0) }}</p>
-    <p class="muted">All time</p>
+<div class="grid grid-cols-3">
+  <div class="card stat-card">
+    <p class="stat-label">Total Requests</p>
+    <p class="stat-value">{{ analytics.status_counts.values() | sum(attribute=0) | default(0) }}</p>
+    <p class="stat-subtitle">All time</p>
   </div>
 
-  <div class="card">
-    <h3>Total Tokens Used</h3>
-    <p style="font-size: 1.875rem; font-weight: 700; margin: 16px 0;">{{ analytics.token_total | default(0) }}</p>
-    <p class="muted">Chat token consumption</p>
+  <div class="card stat-card">
+    <p class="stat-label">Tokens Used</p>
+    <p class="stat-value">{{ analytics.token_total | default(0) }}</p>
+    <p class="stat-subtitle">Chat token consumption</p>
   </div>
 
-  <div class="card">
-    <h3>Image Requests</h3>
-    <p style="font-size: 1.875rem; font-weight: 700; margin: 16px 0;">{{ analytics.image_requests | default(0) }}</p>
-    <p class="muted">Total generated</p>
+  <div class="card stat-card">
+    <p class="stat-label">Images Generated</p>
+    <p class="stat-value">{{ analytics.image_requests | default(0) }}</p>
+    <p class="stat-subtitle">Total image requests</p>
   </div>
 </div>
 
-<div class="grid" style="grid-template-columns: 1fr 1fr;">
+<div class="grid grid-cols-2">
   <div class="card">
-    <h3>Status Breakdown</h3>
+    <h3>Request Status Breakdown</h3>
     <canvas id="statusChart" style="max-height: 300px;"></canvas>
   </div>
 
   <div class="card">
     <h3>Status Summary</h3>
-    <ul style="margin: 0; padding: 0; list-style: none;">
+    <div class="status-list">
       {% set statuses = [
-        ('auto_responded', 'Responded Automatically', 'blue'),
-        ('approved_grok', 'Approved via Grok', 'green'),
-        ('approved_manual', 'Approved Manually', 'green'),
-        ('rejected', 'Rejected', 'red'),
-        ('pending_approval', 'Pending Review', 'yellow'),
-        ('error', 'Errors', 'red'),
+        ('auto_responded', 'Auto Responded', '#2563eb'),
+        ('approved_grok', 'Approved via Grok', '#16a34a'),
+        ('approved_manual', 'Approved Manually', '#10b981'),
+        ('rejected', 'Rejected', '#dc2626'),
+        ('pending_approval', 'Pending Review', '#f59e0b'),
+        ('error', 'Errors', '#ef4444'),
       ] %}
       {% for key, label, color in statuses %}
-      <li style="padding: 10px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-base);">
-        <span>
-          {% if color == 'blue' %}
-          <span class="pill">{{ label }}</span>
-          {% elif color == 'green' %}
-          <span class="pill success">{{ label }}</span>
-          {% elif color == 'yellow' %}
-          <span class="pill warning">{{ label }}</span>
-          {% elif color == 'red' %}
-          <span class="pill danger">{{ label }}</span>
-          {% endif %}
-        </span>
-        <strong>{{ analytics.status_counts.get(key, 0) }}</strong>
-      </li>
+      <div class="status-row">
+        <div class="status-indicator" style="background-color: {{ color }};"></div>
+        <span class="status-label">{{ label }}</span>
+        <strong class="status-count">{{ analytics.status_counts.get(key, 0) }}</strong>
+      </div>
       {% endfor %}
-    </ul>
+    </div>
   </div>
 </div>
+
+<style>
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .stat-label {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    margin: 8px 0 4px 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+
+  .stat-subtitle {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+  }
+
+  .status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border-base);
+  }
+
+  .status-row:last-child {
+    border-bottom: none;
+  }
+
+  .status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-label {
+    flex: 1;
+    font-size: 0.9rem;
+  }
+
+  .status-count {
+    font-size: 1rem;
+    font-weight: 700;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  @media (max-width: 768px) {
+    .grid-cols-3 {
+      grid-template-columns: 1fr;
+    }
+
+    .grid-cols-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+    }
+  }
+</style>
 
 <script>
 // Status breakdown chart
 const ctx = document.getElementById('statusChart').getContext('2d');
 const statusLabels = [
-  'Responded',
+  'Auto Responded',
   'Approved (Grok)',
   'Approved (Manual)',
   'Rejected',
-  'Pending',
+  'Pending Review',
   'Errors'
 ];
 const statusData = [
@@ -111,7 +216,13 @@ new Chart(ctx, {
     maintainAspectRatio: true,
     plugins: {
       legend: {
-        position: 'bottom'
+        position: 'bottom',
+        labels: {
+          font: {
+            size: 12
+          },
+          padding: 15
+        }
       }
     }
   }

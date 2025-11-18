@@ -2,12 +2,12 @@
 {% block title %}Overview - Grok Discord Bot Admin{% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="page-header">
   <h2>Overview</h2>
-  <p class="muted">Guild status and quick stats for today</p>
+  <p class="page-subtitle">Guild status and quick stats for today</p>
 </div>
 
-<div class="grid">
+<div class="grid grid-cols-3">
   <div class="card">
     <h3>Auto Approve Status</h3>
     <p>
@@ -17,80 +17,113 @@
       <span class="pill">Disabled</span>
       {% endif %}
     </p>
-    <p class="muted">
+    <p class="muted text-sm">
       {% if config.auto_approve_enabled %}
-      New requests will require admin approval before Grok is called.
+      New requests require admin approval before Grok is called.
       {% if config.admin_bypass_auto_approve %}
-      Admins can bypass this.
+      <br>Admins can bypass this.
       {% endif %}
       {% else %}
-      Requests are processed directly without approval.
+      Requests process directly without approval.
       {% endif %}
     </p>
   </div>
 
   <div class="card">
     <h3>Today's Chat Tokens</h3>
-    <p style="font-size: 1.5rem; font-weight: 700;">{{ usage.guild.chat_tokens_used }} <span style="font-size: 1rem; color: var(--color-text-muted);">/ {{ config.global_daily_chat_token_limit }}</span></p>
-    <div style="background: var(--color-bg-app); border-radius: 4px; height: 8px; margin-top: 8px; overflow: hidden;">
-      <div style="background: var(--color-blue-500); height: 100%; {% set pct = (usage.guild.chat_tokens_used / config.global_daily_chat_token_limit * 100) | round %}width: {{ pct }}%;"></div>
+    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">
+      {{ usage.guild.chat_tokens_used }} <span style="font-size: 0.875rem; color: var(--color-text-muted);">/ {{ config.global_daily_chat_token_limit }}</span>
+    </p>
+    {% set pct = (usage.guild.chat_tokens_used / config.global_daily_chat_token_limit * 100) | round %}
+    <div style="background: var(--color-bg-app); border-radius: 4px; height: 6px; margin: 12px 0; overflow: hidden;">
+      <div style="background: var(--color-blue-500); height: 100%; width: {{ pct }}%;"></div>
     </div>
-    <p class="muted">Guild daily limit</p>
+    <p class="muted text-sm">Guild daily limit</p>
   </div>
 
   <div class="card">
     <h3>Today's Images</h3>
-    <p style="font-size: 1.5rem; font-weight: 700;">{{ usage.guild.images_generated }} <span style="font-size: 1rem; color: var(--color-text-muted);">/ {{ config.global_daily_image_limit }}</span></p>
-    <div style="background: var(--color-bg-app); border-radius: 4px; height: 8px; margin-top: 8px; overflow: hidden;">
-      <div style="background: var(--color-green-500); height: 100%; {% set img_pct = (usage.guild.images_generated / config.global_daily_image_limit * 100) | round %}width: {{ img_pct }}%;"></div>
+    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">
+      {{ usage.guild.images_generated }} <span style="font-size: 0.875rem; color: var(--color-text-muted);">/ {{ config.global_daily_image_limit }}</span>
+    </p>
+    {% set img_pct = (usage.guild.images_generated / config.global_daily_image_limit * 100) | round %}
+    <div style="background: var(--color-bg-app); border-radius: 4px; height: 6px; margin: 12px 0; overflow: hidden;">
+      <div style="background: var(--color-green-500); height: 100%; width: {{ img_pct }}%;"></div>
     </div>
-    <p class="muted">Guild daily limit</p>
+    <p class="muted text-sm">Guild daily limit</p>
   </div>
+</div>
 
+<div class="grid grid-cols-3">
   <div class="card">
     <h3>Pending Approvals</h3>
-    <p style="font-size: 1.5rem; font-weight: 700;">{{ pending | length }}</p>
-    <a href="/guilds/{{ guild_id }}/queue" class="btn" style="margin-top: 8px;">Review Queue</a>
+    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">{{ pending | length }}</p>
+    <a href="/guilds/{{ guild_id }}/queue" class="btn btn-sm">Review Queue →</a>
   </div>
 
   <div class="card">
-    <h3>Lifetime Usage</h3>
-    <p>Total tokens: <strong>{{ analytics.token_total }}</strong></p>
-    <p>Image requests: <strong>{{ analytics.image_requests }}</strong></p>
+    <h3>Lifetime Tokens</h3>
+    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">{{ analytics.token_total }}</p>
+    <p class="muted text-sm">All time chat tokens</p>
   </div>
 
   <div class="card">
-    <h3>Status Breakdown</h3>
-    <ul style="margin: 0; padding: 0; list-style: none;">
-      {% set statuses = [('auto_responded', 'Auto Responded'), ('approved_grok', 'Approved (Grok)'), ('approved_manual', 'Approved (Manual)'), ('rejected', 'Rejected'), ('pending_approval', 'Pending'), ('error', 'Error')] %}
-      {% for key, label in statuses %}
-      <li style="padding: 6px 0; display: flex; justify-content: space-between;">
-        <span>{{ label }}:</span>
-        <strong>{{ analytics.status_counts.get(key, 0) }}</strong>
-      </li>
-      {% endfor %}
-    </ul>
+    <h3>Images Generated</h3>
+    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">{{ analytics.image_requests }}</p>
+    <p class="muted text-sm">Total image requests</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Status Breakdown</h2>
+  <p class="page-subtitle">All time request statuses</p>
+  <div class="status-grid">
+    {% set statuses = [
+      ('auto_responded', 'Auto Responded', '📤'),
+      ('approved_grok', 'Approved via Grok', '✅'),
+      ('approved_manual', 'Approved Manually', '👤'),
+      ('rejected', 'Rejected', '❌'),
+      ('pending_approval', 'Pending Review', '⏳'),
+      ('error', 'Errors', '⚠️')
+    ] %}
+    {% for key, label, icon in statuses %}
+    <div class="status-item">
+      <span class="status-icon">{{ icon }}</span>
+      <div>
+        <p class="status-label">{{ label }}</p>
+        <p class="status-count">{{ analytics.status_counts.get(key, 0) }}</p>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
 
 <div class="card">
   <h2>Recent Activity</h2>
-  <table>
+  <p class="page-subtitle">Last 10 requests</p>
+  {% if recent | length > 0 %}
+  <table class="table">
     <thead>
       <tr>
         <th>Time</th>
         <th>User</th>
         <th>Type</th>
         <th>Status</th>
-        <th>Content</th>
+        <th>Preview</th>
       </tr>
     </thead>
     <tbody>
       {% for row in recent %}
       <tr>
-        <td>{{ row.created_at | truncate(16, True, '') }}</td>
-        <td>{{ row.user_id }}</td>
-        <td>{{ row.command_type }}</td>
+        <td class="text-sm muted">{{ row.created_at | truncate(16, True, '') }}</td>
+        <td class="text-sm">{{ row.user_id }}</td>
+        <td>
+          {% if row.command_type == 'ask' %}
+          <span class="pill">Chat</span>
+          {% elif row.command_type == 'image' %}
+          <span class="pill">Image</span>
+          {% endif %}
+        </td>
         <td>
           {% if row.status == 'auto_responded' %}
           <span class="pill">Responded</span>
@@ -106,13 +139,108 @@
           <span class="pill">{{ row.status }}</span>
           {% endif %}
         </td>
-        <td>{{ row.user_content[:80] }}</td>
+        <td class="text-sm">{{ row.user_content[:60] }}</td>
       </tr>
       {% endfor %}
-      {% if recent | length == 0 %}
-      <tr><td colspan="5" class="muted text-center">No activity yet</td></tr>
-      {% endif %}
     </tbody>
   </table>
+  {% else %}
+  <p class="muted text-center">No activity yet</p>
+  {% endif %}
 </div>
+
+<style>
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .status-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--color-bg-app);
+    border-radius: 8px;
+  }
+
+  .status-icon {
+    font-size: 1.5rem;
+    min-width: 32px;
+  }
+
+  .status-label {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: 0 0 4px 0;
+  }
+
+  .status-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .text-sm {
+    font-size: 0.875rem;
+  }
+
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    margin-top: 8px;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table thead th {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 2px solid var(--color-border-base);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .table tbody td {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--color-border-base);
+  }
+
+  .table tbody tr:hover {
+    background: var(--color-bg-app);
+  }
+</style>
 {% endblock %}

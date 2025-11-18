@@ -2,26 +2,31 @@
 {% block title %}Admin Users - Grok Discord Bot Admin{% endblock %}
 
 {% block content %}
-<div class="card mb-6">
+<div class="page-header">
   <h2>Admin Users</h2>
-  <p class="muted">Manage who can access this guild's admin panel</p>
+  <p class="page-subtitle">Manage who can access this guild's admin panel</p>
 </div>
 
-<div class="card mb-6">
+<!-- Add Admin Section -->
+<div class="card add-admin-card">
   <h3>Add Admin User</h3>
-  <form id="add-admin-form" class="flex-row" style="gap: 12px;">
-    <div class="form-group" style="flex: 1; margin-bottom: 0; min-width: 200px;">
-      <input type="text" id="new-admin-id" placeholder="Discord User ID" required>
+  <p class="card-description">Grant admin access to Discord users</p>
+  
+  <form id="add-admin-form" class="add-admin-form">
+    <div class="input-group">
+      <input type="text" id="new-admin-id" placeholder="Enter Discord User ID" required>
+      <button type="submit" class="btn btn-primary">Add Admin</button>
     </div>
-    <button type="submit" class="btn">Add Admin</button>
-    <div id="add-status" class="muted"></div>
+    <div id="add-status" class="form-feedback"></div>
   </form>
 </div>
 
+<!-- Admin List Section -->
 <div class="card">
-  <h3>Current Admins</h3>
-  <p class="muted">Admins for this guild</p>
-  <table id="admins-table">
+  <h3>Current Admin Users</h3>
+  <p class="card-description">All administrators for this guild</p>
+  
+  <table class="table admin-table">
     <thead>
       <tr>
         <th>Discord User ID</th>
@@ -31,10 +36,148 @@
       </tr>
     </thead>
     <tbody id="admins-list">
-      <tr><td colspan="4" class="muted text-center">Loading...</td></tr>
+      <tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>
     </tbody>
   </table>
 </div>
+
+<style>
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .card h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+  }
+
+  .card-description {
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  .add-admin-card {
+    margin-bottom: 32px;
+  }
+
+  .add-admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .input-group input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-base);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .form-feedback {
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-height: 20px;
+  }
+
+  .form-feedback.success {
+    color: #059669;
+  }
+
+  .form-feedback.error {
+    color: #dc2626;
+  }
+
+  .btn-primary {
+    padding: 10px 24px;
+    background: var(--color-blue-500);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .btn-primary:hover {
+    background: var(--color-blue-600);
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  .table thead th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid var(--color-border-base);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .admin-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border-base);
+  }
+
+  .admin-table tbody tr:hover {
+    background: var(--color-bg-app);
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+
+  .btn-remove {
+    padding: 6px 12px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  .btn-remove:hover {
+    background: #dc2626;
+  }
+
+  @media (max-width: 640px) {
+    .input-group {
+      flex-direction: column;
+    }
+
+    .btn-primary {
+      width: 100%;
+    }
+  }
+</style>
 
 <script>
 async function loadAdmins() {
@@ -55,17 +198,17 @@ async function loadAdmins() {
     const tbody = document.getElementById("admins-list");
     
     if (admins.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="muted text-center">No admins found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No admins found</td></tr>';
       return;
     }
     
     tbody.innerHTML = admins.map(admin => `
       <tr>
         <td>${admin.discord_user_id}</td>
-        <td>${admin.role}</td>
-        <td>${admin.created_at ? admin.created_at.substring(0, 10) : 'N/A'}</td>
+        <td>${admin.role || '-'}</td>
+        <td class="text-muted">${admin.created_at ? admin.created_at.substring(0, 10) : 'N/A'}</td>
         <td>
-          <button class="btn danger" onclick="removeAdmin('${admin.discord_user_id}')">Remove</button>
+          <button class="btn-remove" onclick="removeAdmin('${admin.discord_user_id}')">Remove</button>
         </td>
       </tr>
     `).join('');
@@ -98,15 +241,15 @@ async function addAdmin(e) {
     const status = document.getElementById("add-status");
     if (res.ok) {
       document.getElementById("new-admin-id").value = "";
-      status.textContent = "✓ Admin added";
-      status.style.color = "var(--color-text-success)";
+      status.textContent = "✓ Admin added successfully";
+      status.className = "form-feedback success";
       loadAdmins();
     } else {
       const error = await res.json();
       status.textContent = `✗ ${error.detail || 'Error adding admin'}`;
-      status.style.color = "var(--color-text-danger)";
+      status.className = "form-feedback error";
     }
-    setTimeout(() => { status.textContent = ""; }, 3000);
+    setTimeout(() => { status.textContent = ""; status.className = "form-feedback"; }, 4000);
   } catch (err) {
     alert(`Error: ${err.message}`);
   }

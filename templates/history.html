@@ -2,15 +2,16 @@
 {% block title %}History - Grok Discord Bot Admin{% endblock %}
 
 {% block content %}
-<div class="card mb-6">
+<div class="page-header">
   <h2>Message History</h2>
-  <p class="muted">View and search all processed requests</p>
+  <p class="page-subtitle">View and search all processed requests</p>
 </div>
 
-<div class="card mb-6">
+<div class="card filter-card">
   <h3>Filters</h3>
-  <form id="filter-form" class="flex-row" style="gap: 12px; flex-wrap: wrap;">
-    <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+  <form id="filter-form" class="filter-form">
+    <div class="filter-group">
+      <label for="status-filter">Status</label>
       <select name="status" id="status-filter">
         <option value="">All Status</option>
         <option value="auto_responded" {% if status_filter == 'auto_responded' %}selected{% endif %}>Auto Responded</option>
@@ -21,19 +22,23 @@
         <option value="error" {% if status_filter == 'error' %}selected{% endif %}>Error</option>
       </select>
     </div>
-    <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+    
+    <div class="filter-group">
+      <label for="command-filter">Type</label>
       <select name="command_type" id="command-filter">
         <option value="">All Types</option>
-        <option value="ask" {% if command_type_filter == 'ask' %}selected{% endif %}>!ask (Chat)</option>
-        <option value="image" {% if command_type_filter == 'image' %}selected{% endif %}>!image (Image)</option>
+        <option value="ask" {% if command_type_filter == 'ask' %}selected{% endif %}>Chat (!ask)</option>
+        <option value="image" {% if command_type_filter == 'image' %}selected{% endif %}>Image (!image)</option>
       </select>
     </div>
-    <button type="submit" class="btn" style="margin-bottom: 0;">Apply Filters</button>
+    
+    <button type="submit" class="btn btn-filter">Apply Filters</button>
   </form>
 </div>
 
+{% if history | length > 0 %}
 <div class="card">
-  <table>
+  <table class="table history-table">
     <thead>
       <tr>
         <th>Time</th>
@@ -46,9 +51,9 @@
     </thead>
     <tbody>
       {% for row in history %}
-      <tr style="cursor: pointer;" onclick="expandRow(this)">
-        <td>{{ row.created_at | truncate(16, True, '') }}</td>
-        <td>{{ row.user_id }}</td>
+      <tr class="history-row" style="cursor: pointer;" onclick="expandRow(this)">
+        <td class="text-sm muted">{{ row.created_at | truncate(16, True, '') }}</td>
+        <td class="text-sm">{{ row.user_id }}</td>
         <td>
           {% if row.command_type == 'ask' %}
           <span class="pill">Chat</span>
@@ -73,35 +78,219 @@
           <span class="pill">{{ row.status }}</span>
           {% endif %}
         </td>
-        <td>{{ row.total_tokens or '-' }}</td>
-        <td>{{ row.user_content[:60] }}</td>
+        <td class="text-sm">{{ row.total_tokens or '-' }}</td>
+        <td class="text-sm preview-cell">{{ row.user_content[:60] }}</td>
       </tr>
       <tr class="details-row" style="display: none;">
         <td colspan="6">
-          <div style="padding: 16px; background: var(--color-bg-app); border-radius: 4px;">
-            <div class="grid" style="grid-template-columns: 1fr 1fr;">
-              <div>
-                <h4>Request</h4>
-                <p style="white-space: pre-wrap; word-break: break-word; font-size: 0.85rem;">{{ row.user_content }}</p>
+          <div class="details-panel">
+            <div class="details-grid">
+              <div class="detail-section">
+                <h4>Request Content</h4>
+                <p class="detail-text">{{ row.user_content }}</p>
               </div>
-              <div>
+              <div class="detail-section">
                 <h4>Metadata</h4>
-                <p><strong>ID:</strong> {{ row.id }}</p>
-                <p><strong>Status:</strong> {{ row.status }}</p>
-                <p><strong>Decision:</strong> {{ row.decision or 'N/A' }}</p>
-                <p><strong>Tokens:</strong> {{ row.total_tokens or 'N/A' }}</p>
+                <dl class="detail-list">
+                  <dt>Request ID:</dt>
+                  <dd>{{ row.id }}</dd>
+                  <dt>Status:</dt>
+                  <dd>{{ row.status }}</dd>
+                  <dt>Decision:</dt>
+                  <dd>{{ row.decision or 'N/A' }}</dd>
+                  <dt>Tokens Used:</dt>
+                  <dd>{{ row.total_tokens or 'N/A' }}</dd>
+                </dl>
               </div>
             </div>
           </div>
         </td>
       </tr>
       {% endfor %}
-      {% if history | length == 0 %}
-      <tr><td colspan="6" class="muted text-center">No history found</td></tr>
-      {% endif %}
     </tbody>
   </table>
 </div>
+{% else %}
+<div class="card empty-state">
+  <p class="muted text-center">No history found</p>
+</div>
+{% endif %}
+
+<style>
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .filter-card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1rem;
+  }
+
+  .filter-form {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-group label {
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .filter-group select {
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-base);
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
+
+  .btn-filter {
+    padding: 8px 16px;
+    background: var(--color-blue-500);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .btn-filter:hover {
+    background: var(--color-blue-600);
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table thead th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid var(--color-border-base);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .history-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border-base);
+  }
+
+  .history-row:hover {
+    background: var(--color-bg-app);
+  }
+
+  .preview-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .text-sm {
+    font-size: 0.875rem;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .details-row {
+    background: var(--color-bg-app);
+  }
+
+  .details-panel {
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .detail-section h4 {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .detail-text {
+    margin: 0;
+    padding: 12px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid var(--color-blue-500);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+  }
+
+  .detail-list {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px 16px;
+  }
+
+  .detail-list dt {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .detail-list dd {
+    margin: 0;
+    font-size: 0.9rem;
+    word-break: break-all;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+  }
+
+  @media (max-width: 768px) {
+    .details-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-form {
+      flex-direction: column;
+    }
+
+    .filter-group {
+      width: 100%;
+    }
+  }
+</style>
 
 <script>
 document.getElementById("filter-form").addEventListener("submit", (e) => {

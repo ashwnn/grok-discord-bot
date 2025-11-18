@@ -2,119 +2,273 @@
 {% block title %}Configuration - Grok Discord Bot Admin{% endblock %}
 
 {% block content %}
-<div class="card mb-6">
+<div class="page-header">
   <h2>Configuration</h2>
-  <p class="muted">Edit bot behavior, limits, and system prompt</p>
+  <p class="page-subtitle">Edit bot behavior, limits, and system prompt</p>
 </div>
 
 <form id="config-form" class="card">
-  <h3>Rate Limits</h3>
-  <p class="muted">How frequently users can issue commands per window</p>
-  
-  <div class="grid">
-    <div class="form-group">
-      <label for="ask_window_seconds">!ask Window (seconds)</label>
-      <input type="number" id="ask_window_seconds" name="ask_window_seconds" value="{{ config.ask_window_seconds }}" min="1" required>
+  <!-- Rate Limits Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Rate Limits</h3>
+      <p class="section-description">How frequently users can issue commands per time window</p>
     </div>
-    <div class="form-group">
-      <label for="ask_max_per_window">!ask Max per Window</label>
-      <input type="number" id="ask_max_per_window" name="ask_max_per_window" value="{{ config.ask_max_per_window }}" min="1" required>
+    
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="ask_window_seconds">!ask Window (seconds)</label>
+        <input type="number" id="ask_window_seconds" name="ask_window_seconds" value="{{ config.ask_window_seconds }}" min="1" required>
+      </div>
+      <div class="form-group">
+        <label for="ask_max_per_window">!ask Max per Window</label>
+        <input type="number" id="ask_max_per_window" name="ask_max_per_window" value="{{ config.ask_max_per_window }}" min="1" required>
+      </div>
+      <div class="form-group">
+        <label for="image_window_seconds">!image Window (seconds)</label>
+        <input type="number" id="image_window_seconds" name="image_window_seconds" value="{{ config.image_window_seconds }}" min="1" required>
+      </div>
+      <div class="form-group">
+        <label for="image_max_per_window">!image Max per Window</label>
+        <input type="number" id="image_max_per_window" name="image_max_per_window" value="{{ config.image_max_per_window }}" min="1" required>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="image_window_seconds">!image Window (seconds)</label>
-      <input type="number" id="image_window_seconds" name="image_window_seconds" value="{{ config.image_window_seconds }}" min="1" required>
-    </div>
-    <div class="form-group">
-      <label for="image_max_per_window">!image Max per Window</label>
-      <input type="number" id="image_max_per_window" name="image_max_per_window" value="{{ config.image_max_per_window }}" min="1" required>
-    </div>
+
     <div class="form-group">
       <label for="duplicate_window_seconds">Duplicate Check Window (seconds)</label>
       <input type="number" id="duplicate_window_seconds" name="duplicate_window_seconds" value="{{ config.duplicate_window_seconds }}" min="1" required>
     </div>
-  </div>
+  </section>
 
-  <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--color-border-base);">
+  <hr class="section-divider">
 
-  <h3>Daily Budgets</h3>
-  <p class="muted">Token and image limits reset daily at midnight UTC</p>
-
-  <div class="grid">
-    <div class="form-group">
-      <label for="user_daily_chat_token_limit">User Daily Chat Token Limit</label>
-      <input type="number" id="user_daily_chat_token_limit" name="user_daily_chat_token_limit" value="{{ config.user_daily_chat_token_limit }}" min="0" required>
+  <!-- Daily Budgets Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Daily Budgets</h3>
+      <p class="section-description">Token and image limits reset daily at midnight UTC</p>
     </div>
-    <div class="form-group">
-      <label for="global_daily_chat_token_limit">Guild Daily Chat Token Limit</label>
-      <input type="number" id="global_daily_chat_token_limit" name="global_daily_chat_token_limit" value="{{ config.global_daily_chat_token_limit }}" min="0" required>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="user_daily_chat_token_limit">User Daily Chat Token Limit</label>
+        <input type="number" id="user_daily_chat_token_limit" name="user_daily_chat_token_limit" value="{{ config.user_daily_chat_token_limit }}" min="0" required>
+      </div>
+      <div class="form-group">
+        <label for="global_daily_chat_token_limit">Guild Daily Chat Token Limit</label>
+        <input type="number" id="global_daily_chat_token_limit" name="global_daily_chat_token_limit" value="{{ config.global_daily_chat_token_limit }}" min="0" required>
+      </div>
+      <div class="form-group">
+        <label for="user_daily_image_limit">User Daily Image Limit</label>
+        <input type="number" id="user_daily_image_limit" name="user_daily_image_limit" value="{{ config.user_daily_image_limit }}" min="0" required>
+      </div>
+      <div class="form-group">
+        <label for="global_daily_image_limit">Guild Daily Image Limit</label>
+        <input type="number" id="global_daily_image_limit" name="global_daily_image_limit" value="{{ config.global_daily_image_limit }}" min="0" required>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="user_daily_image_limit">User Daily Image Limit</label>
-      <input type="number" id="user_daily_image_limit" name="user_daily_image_limit" value="{{ config.user_daily_image_limit }}" min="0" required>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Auto Approval Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Auto Approval</h3>
+      <p class="section-description">Require admin approval before calling Grok</p>
     </div>
+
     <div class="form-group">
-      <label for="global_daily_image_limit">Guild Daily Image Limit</label>
-      <input type="number" id="global_daily_image_limit" name="global_daily_image_limit" value="{{ config.global_daily_image_limit }}" min="0" required>
+      <label class="toggle">
+        <input type="checkbox" id="auto_approve_enabled" name="auto_approve_enabled" {% if config.auto_approve_enabled %}checked{% endif %}>
+        <span class="toggle-switch"></span>
+        Enable auto-approve queue
+      </label>
     </div>
-  </div>
 
-  <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--color-border-base);">
-
-  <h3>Auto Approval</h3>
-  <p class="muted">Require admin approval before calling Grok</p>
-
-  <div class="form-group">
-    <label class="toggle">
-      <input type="checkbox" id="auto_approve_enabled" name="auto_approve_enabled" {% if config.auto_approve_enabled %}checked{% endif %}>
-      <span class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></span>
-      Enable auto-approve queue
-    </label>
-  </div>
-
-  <div class="form-group">
-    <label class="toggle">
-      <input type="checkbox" id="admin_bypass_auto_approve" name="admin_bypass_auto_approve" {% if config.admin_bypass_auto_approve %}checked{% endif %}>
-      <span class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></span>
-      Admins bypass auto-approve
-    </label>
-  </div>
-
-  <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--color-border-base);">
-
-  <h3>Grok Settings</h3>
-
-  <div class="grid">
     <div class="form-group">
-      <label for="temperature">Temperature (0.0 - 2.0)</label>
-      <input type="number" id="temperature" name="temperature" value="{{ config.temperature }}" min="0" max="2" step="0.1" required>
-      <p class="muted">Lower = more focused, Higher = more creative</p>
+      <label class="toggle">
+        <input type="checkbox" id="admin_bypass_auto_approve" name="admin_bypass_auto_approve" {% if config.admin_bypass_auto_approve %}checked{% endif %}>
+        <span class="toggle-switch"></span>
+        Admins bypass auto-approve
+      </label>
     </div>
-    <div class="form-group">
-      <label for="max_completion_tokens">Max Completion Tokens</label>
-      <input type="number" id="max_completion_tokens" name="max_completion_tokens" value="{{ config.max_completion_tokens }}" min="1" required>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- Grok Settings Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>Grok Model Settings</h3>
+      <p class="section-description">Configure model behavior and output</p>
     </div>
+
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label for="temperature">Temperature (0.0 - 2.0)</label>
+        <input type="number" id="temperature" name="temperature" value="{{ config.temperature }}" min="0" max="2" step="0.1" required>
+        <p class="form-hint">Lower = more focused and deterministic, Higher = more creative and diverse</p>
+      </div>
+      <div class="form-group">
+        <label for="max_completion_tokens">Max Completion Tokens</label>
+        <input type="number" id="max_completion_tokens" name="max_completion_tokens" value="{{ config.max_completion_tokens }}" min="1" required>
+        <p class="form-hint">Maximum tokens for each response</p>
+      </div>
+    </div>
+
     <div class="form-group">
       <label for="max_prompt_chars">Max Prompt Characters</label>
       <input type="number" id="max_prompt_chars" name="max_prompt_chars" value="{{ config.max_prompt_chars }}" min="1" required>
     </div>
-  </div>
+  </section>
 
-  <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--color-border-base);">
+  <hr class="section-divider">
 
-  <h3>System Prompt (Personality)</h3>
-  <p class="muted">Instructions for bot behavior. Avoid slurs, explicit content, and graphic violence.</p>
+  <!-- System Prompt Section -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3>System Prompt</h3>
+      <p class="section-description">Instructions for bot personality and behavior. Avoid slurs, explicit content, and graphic violence.</p>
+    </div>
 
-  <div class="form-group">
-    <textarea id="system_prompt" name="system_prompt" required>{{ config.system_prompt }}</textarea>
-  </div>
+    <div class="form-group">
+      <textarea id="system_prompt" name="system_prompt" required></textarea>
+    </div>
+  </section>
 
-  <div class="flex-row" style="margin-top: 20px;">
-    <button type="submit" class="btn">Save Configuration</button>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save Configuration</button>
     <div id="config-status" class="muted"></div>
   </div>
 </form>
 
+<style>
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .section-header h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.125rem;
+  }
+
+  .section-description {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-base);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .form-hint {
+    margin: 4px 0 0 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .section-divider {
+    margin: 32px 0;
+    border: none;
+    border-top: 1px solid var(--color-border-base);
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border-base);
+  }
+
+  .btn-primary {
+    padding: 10px 24px;
+    background: var(--color-blue-500);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    background: var(--color-blue-600);
+  }
+</style>
+
 <script>
+const guildId = "{{ guild_id }}";
+
+// Load system prompt on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  const promptTextarea = document.getElementById('system_prompt');
+  const currentPrompt = "{{ config.system_prompt | e('js') }}";
+  promptTextarea.value = currentPrompt;
+});
+
 document.getElementById("config-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   setAdminUserId();
@@ -136,7 +290,7 @@ document.getElementById("config-form").addEventListener("submit", async (e) => {
     }
   });
 
-  const res = await fetch(`/api/guilds/{{ guild_id }}/config`, {
+  const res = await fetch(`/api/guilds/${guildId}/config`, {
     method: "POST",
     headers: adminHeaders,
     body: JSON.stringify(payload),

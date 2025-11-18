@@ -9,41 +9,78 @@
 </head>
 <body>
   <div class="page-wrapper">
-    <header>
-      <div class="header-content">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-left">
         <h1 class="brand">Chad Bot Admin</h1>
         {% if guild_id %}
-        <span class="muted">Guild: {{ guild_id }}</span>
+        <span class="guild-badge">Guild: {{ guild_id }}</span>
         {% endif %}
       </div>
-      <nav>
-        {% if guild_id %}
-        <a href="/guilds/{{ guild_id }}">Dashboard</a>
-        {% endif %}
-        <a href="/">Guilds</a>
-        <a href="/messages" class="{% if page == 'messages' %}active{% endif %}">Bot Messages</a>
-      </nav>
       <button class="nav-toggle" onclick="toggleSidebar()" title="Toggle menu">☰</button>
     </header>
 
-    {% if guild_id %}
-    <aside id="sidebar">
-      <nav>
-        <a href="/guilds/{{ guild_id }}" class="{% if page == 'dashboard' %}active{% endif %}">Overview</a>
-        <a href="/guilds/{{ guild_id }}/config" class="{% if page == 'config' %}active{% endif %}">Configuration</a>
-        <a href="/guilds/{{ guild_id }}/queue" class="{% if page == 'queue' %}active{% endif %}">Approval Queue</a>
-        <a href="/guilds/{{ guild_id }}/history" class="{% if page == 'history' %}active{% endif %}">History</a>
-        <a href="/guilds/{{ guild_id }}/analytics" class="{% if page == 'analytics' %}active{% endif %}">Analytics</a>
-        <a href="/guilds/{{ guild_id }}/admins" class="{% if page == 'admins' %}active{% endif %}">Admin Users</a>
-      </nav>
-    </aside>
-    {% endif %}
+    <div class="layout-container">
+      <!-- Sidebar Navigation -->
+      {% if guild_id %}
+      <aside id="sidebar" class="sidebar">
+        <nav class="sidebar-nav">
+          <div class="nav-group">
+            <h3 class="nav-group-title">Navigation</h3>
+            <a href="/" class="nav-link">← Back to Guilds</a>
+          </div>
+          
+          <div class="nav-group">
+            <h3 class="nav-group-title">Guild Management</h3>
+            <a href="/guilds/{{ guild_id }}" class="nav-link {% if page == 'dashboard' %}active{% endif %}">
+              📊 Overview
+            </a>
+            <a href="/guilds/{{ guild_id }}/config" class="nav-link {% if page == 'config' %}active{% endif %}">
+              ⚙️ Configuration
+            </a>
+            <a href="/guilds/{{ guild_id }}/admins" class="nav-link {% if page == 'admins' %}active{% endif %}">
+              👥 Admin Users
+            </a>
+          </div>
 
-    <main>
-      <div class="container">
-        {% block content %}{% endblock %}
-      </div>
-    </main>
+          <div class="nav-group">
+            <h3 class="nav-group-title">Workflow</h3>
+            <a href="/guilds/{{ guild_id }}/queue" class="nav-link {% if page == 'queue' %}active{% endif %}">
+              ✋ Approval Queue
+            </a>
+            <a href="/guilds/{{ guild_id }}/history" class="nav-link {% if page == 'history' %}active{% endif %}">
+              📜 History
+            </a>
+          </div>
+
+          <div class="nav-group">
+            <h3 class="nav-group-title">Insights</h3>
+            <a href="/guilds/{{ guild_id }}/analytics" class="nav-link {% if page == 'analytics' %}active{% endif %}">
+              📈 Analytics
+            </a>
+          </div>
+        </nav>
+      </aside>
+      {% else %}
+      <aside id="sidebar" class="sidebar">
+        <nav class="sidebar-nav">
+          <div class="nav-group">
+            <h3 class="nav-group-title">Global</h3>
+            <a href="/messages" class="nav-link {% if page == 'messages' %}active{% endif %}">
+              💬 Bot Messages
+            </a>
+          </div>
+        </nav>
+      </aside>
+      {% endif %}
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="container">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
   </div>
 
   <script>
