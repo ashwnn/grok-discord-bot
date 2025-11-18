@@ -19,6 +19,7 @@ RUN pip install --upgrade pip \
 COPY src/ /app/src/
 COPY templates/ /app/templates/
 COPY static/ /app/static/
+COPY config/ /app/config/
 
 # Create data dir for SQLite
 RUN mkdir -p /data

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Grok Discord Bot Admin{% endblock %}</title>
+  <title>{% block title %}Chad Bot Admin{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
   {% block extra_head %}{% endblock %}
 </head>
@@ -11,7 +11,7 @@
   <div class="page-wrapper">
     <header>
       <div class="header-content">
-        <h1 class="brand">GrokBot Admin</h1>
+        <h1 class="brand">Chad Bot Admin</h1>
         {% if guild_id %}
         <span class="muted">Guild: {{ guild_id }}</span>
         {% endif %}
@@ -21,6 +21,7 @@
         <a href="/guilds/{{ guild_id }}">Dashboard</a>
         {% endif %}
         <a href="/">Guilds</a>
+        <a href="/messages" class="{% if page == 'messages' %}active{% endif %}">Bot Messages</a>
       </nav>
       <button class="nav-toggle" onclick="toggleSidebar()" title="Toggle menu">☰</button>
     </header>

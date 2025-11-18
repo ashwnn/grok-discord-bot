@@ -3,17 +3,19 @@ import logging
 from typing import Optional
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from .config import Settings
 from .database import Database
 from .grok_client import GrokClient
 from .service import RequestProcessor
+from .yaml_config import YAMLConfig
 
 logger = logging.getLogger(__name__)
 
 
-class GrokDiscordBot(commands.Bot):
+class ChadBot(commands.Bot):
     def __init__(self, settings: Settings, db: Database, processor: RequestProcessor):
         intents = discord.Intents.default()
         intents.message_content = True
@@ -26,10 +28,16 @@ class GrokDiscordBot(commands.Bot):
         await self.db.connect()
         await self.db.create_schema()
         logger.info("Database ready at %s", self.db.path)
+        # Sync slash commands with Discord
+        try:
+            synced = await self.tree.sync()
+            logger.info(f"Synced {len(synced)} slash command(s)")
+        except Exception as e:
+            logger.error(f"Failed to sync commands: {e}")
 
     async def on_ready(self):
         logger.info("Logged in as %s (%s)", self.user, self.user.id if self.user else "unknown")
-        await self.change_presence(activity=discord.Game(name="!ask / !image"))
+        await self.change_presence(activity=discord.Game(name="/ask for questions"))
 
 
 def _guild_id(ctx: commands.Context) -> Optional[str]:
@@ -61,7 +69,7 @@ async def _determine_admin(db: Database, ctx: commands.Context) -> bool:
     return db_admin or _is_admin_user(ctx)
 
 
-def create_bot(settings: Settings) -> GrokDiscordBot:
+def create_bot(settings: Settings) -> ChadBot:
     db = Database(settings.database_path)
     grok = GrokClient(
         api_key=settings.grok_api_key,
@@ -69,49 +77,41 @@ def create_bot(settings: Settings) -> GrokDiscordBot:
         chat_model=settings.grok_chat_model,
         image_model=settings.grok_image_model,
     )
-    processor = RequestProcessor(db=db, grok=grok, settings=settings)
-    bot = GrokDiscordBot(settings=settings, db=db, processor=processor)
+    yaml_config = YAMLConfig()
+    processor = RequestProcessor(db=db, grok=grok, settings=settings, yaml_config=yaml_config)
+    bot = ChadBot(settings=settings, db=db, processor=processor)
 
-    @bot.command(name="ask", help="Ask Grok a question")
-    async def ask_command(ctx: commands.Context, *, question: str = ""):
-        guild_id = _guild_id(ctx)
+    @bot.tree.command(name="ask", description="Ask a question to the AI")
+    @app_commands.describe(question="Your question for the AI")
+    async def ask_slash(interaction: discord.Interaction, question: str):
+        """Slash command for asking questions."""
+        guild_id = str(interaction.guild.id) if interaction.guild else None
         if not guild_id:
-            await ctx.send("This only works in servers, not DMs.")
+            await interaction.response.send_message(yaml_config.get_message("dm_not_allowed"), ephemeral=True)
             return
-        is_admin = await _determine_admin(bot.db, ctx)
-        result = await bot.processor.process_chat(
-            guild_id=guild_id,
-            channel_id=_channel_id(ctx),
-            user_id=_user_id(ctx),
-            discord_message_id=str(ctx.message.id),
-            content=question or "",
-            is_admin=is_admin,
-        )
-        await ctx.send(result.reply)
-        logger.info("Handled !ask %s%s", _user_id(ctx), _admin_label(ctx))
-
-    @bot.command(name="image", help="Generate an image with Grok")
-    async def image_command(ctx: commands.Context, *, prompt: str = ""):
-        guild_id = _guild_id(ctx)
-        if not guild_id:
-            await ctx.send("This only works in servers, not DMs.")
-            return
-        is_admin = await _determine_admin(bot.db, ctx)
-        result = await bot.processor.process_image(
-            guild_id=guild_id,
-            channel_id=_channel_id(ctx),
-            user_id=_user_id(ctx),
-            discord_message_id=str(ctx.message.id),
-            prompt=prompt or "",
-            is_admin=is_admin,
-        )
-        if result.image_url:
-            embed = discord.Embed(title="Grok image")
-            embed.set_image(url=result.image_url)
-            await ctx.send(result.reply, embed=embed)
+        
+        # Check if user is admin
+        is_admin = False
+        if interaction.user.guild_permissions and (interaction.user.guild_permissions.administrator or interaction.user.guild_permissions.manage_guild):
+            is_admin = True
         else:
-            await ctx.send(result.reply)
-        logger.info("Handled !image %s%s", _user_id(ctx), _admin_label(ctx))
+            is_admin = await db.is_admin(str(interaction.user.id), guild_id)
+        
+        # Defer response as processing might take time
+        await interaction.response.defer()
+        
+        result = await processor.process_chat(
+            guild_id=guild_id,
+            channel_id=str(interaction.channel.id) if interaction.channel else "",
+            user_id=str(interaction.user.id),
+            discord_message_id=str(interaction.id),
+            content=question,
+            is_admin=is_admin,
+        )
+        
+        # Send the response
+        await interaction.followup.send(result.reply)
+        logger.info("Handled /ask from %s (admin: %s)", interaction.user.id, is_admin)
 
     return bot
 

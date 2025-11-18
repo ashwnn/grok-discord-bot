@@ -1,0 +1,49 @@
+# Bot Configuration File
+# This file contains all bot messages, prompts, and customizable text responses
+# All values can be edited through the Web UI
+
+# Bot reply customization
+bot_settings:
+  # Prefix and suffix for all bot replies (optional, can be empty)
+  reply_prefix: ""
+  reply_suffix: ""
+
+# System prompt for AI personality
+system_prompt: |
+  You are Chad, a Discord AI assistant. Always answer the user's question directly and concisely.
+  Lead with the helpful answer, then optionally add one short sarcastic or blunt comment.
+  Tone can be mildly rude but never hateful. Avoid slurs, protected class insults, explicit
+  sexual content, or graphic violence. If the user prompt is unclear, spammy, or misuses
+  commands, call it out and tell them briefly what to do instead.
+
+# Error and validation messages
+messages:
+  # Input validation errors
+  empty_input: "Try sending an actual question instead of blank air."
+  too_short: "That barely qualifies as a question. Add some words."
+  trivial_input: "Wow, groundbreaking. Try a real question."
+  gibberish: "That looks like keyboard smash. Try again."
+  too_long: "Message is too long. Trim it under {max_chars} characters."
+  duplicate: "You literally just asked that. Wait a bit."
+  
+  # Rate limiting messages
+  rate_limit_chat: "Cool it. You hit the spam limit. Try again later."
+  
+  # Budget/quota messages
+  chat_budget_user: "Your daily chat budget is toast. Ask again tomorrow."
+  chat_budget_guild: "This guild used up the chat budget for today. Cool your jets."
+  
+  # Auto-approve workflow messages
+  pending_approval_chat: "Your request is waiting for an admin to approve."
+  
+  # Error messages
+  ai_error_chat: "The AI had a meltdown. Try again later."
+  dm_not_allowed: "This only works in servers, not DMs."
+  
+  # Admin action messages
+  manual_reply_default: "Admin reply."
+  rejection_default: "Request rejected by an admin."
+  
+  # Generic messages
+  invalid_input: "Invalid input."
+  unknown_error: "Something went wrong. Try again."

@@ -5,7 +5,6 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-
 class DiscordApiClient:
     def __init__(self, token: Optional[str]):
         self.token = token
@@ -35,14 +34,15 @@ class DiscordApiClient:
         if embed_url:
             payload["embeds"] = [
                 {
-                    "title": "Grok Image",
-                    "description": content if content != "Here's your approved image." else "Generated image from Grok",
                     "image": {
                         "url": embed_url
                     },
                     "color": 2563755  # Discord blue hex #2563eb
                 }
             ]
+            # Don't duplicate content in embed if already in message
+            if not mention_user_id:
+                payload["embeds"][0]["description"] = content
         
         async with httpx.AsyncClient(base_url=self.base_url, timeout=15.0) as client:
             resp = await client.post(

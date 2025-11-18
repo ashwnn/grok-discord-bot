@@ -24,19 +24,20 @@ class GuildConfig:
     admin_bypass_auto_approve: bool = True
     ask_window_seconds: int = 60
     ask_max_per_window: int = 5
-    image_window_seconds: int = 300
-    image_max_per_window: int = 3
     duplicate_window_seconds: int = 60
     user_daily_chat_token_limit: int = 20000
     global_daily_chat_token_limit: int = 200000
-    user_daily_image_limit: int = 5
-    global_daily_image_limit: int = 50
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     temperature: float = 0.5
     max_completion_tokens: int = 1024
     max_prompt_chars: int = 4000
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
+    # Deprecated fields (kept for database compatibility, not used)
+    image_window_seconds: int = 300
+    image_max_per_window: int = 3
+    user_daily_image_limit: int = 5
+    global_daily_image_limit: int = 50
 
 
 class Database:
@@ -74,11 +75,13 @@ class Database:
                 admin_bypass_auto_approve INTEGER DEFAULT 1,
                 ask_window_seconds INTEGER DEFAULT 60,
                 ask_max_per_window INTEGER DEFAULT 5,
+                -- DEPRECATED: Image generation removed, kept for backward compatibility
                 image_window_seconds INTEGER DEFAULT 300,
                 image_max_per_window INTEGER DEFAULT 3,
                 duplicate_window_seconds INTEGER DEFAULT 60,
                 user_daily_chat_token_limit INTEGER DEFAULT 20000,
                 global_daily_chat_token_limit INTEGER DEFAULT 200000,
+                -- DEPRECATED: Image generation removed, kept for backward compatibility
                 user_daily_image_limit INTEGER DEFAULT 5,
                 global_daily_image_limit INTEGER DEFAULT 50,
                 system_prompt TEXT NOT NULL,
@@ -103,6 +106,7 @@ class Database:
                 user_id TEXT NOT NULL,
                 day TEXT NOT NULL,
                 chat_tokens_used INTEGER DEFAULT 0,
+                -- DEPRECATED: Image generation removed, kept for backward compatibility
                 images_generated INTEGER DEFAULT 0,
                 last_updated TEXT DEFAULT (datetime('now')),
                 PRIMARY KEY (guild_id, user_id, day)
@@ -112,6 +116,7 @@ class Database:
                 guild_id TEXT NOT NULL,
                 day TEXT NOT NULL,
                 chat_tokens_used INTEGER DEFAULT 0,
+                -- DEPRECATED: Image generation removed, kept for backward compatibility
                 images_generated INTEGER DEFAULT 0,
                 last_updated TEXT DEFAULT (datetime('now')),
                 PRIMARY KEY (guild_id, day)
@@ -127,6 +132,7 @@ class Database:
                 user_content TEXT NOT NULL,
                 grok_request_payload TEXT,
                 grok_response_content TEXT,
+                -- DEPRECATED: Image generation removed, kept for backward compatibility
                 grok_image_urls TEXT,
                 prompt_tokens INTEGER,
                 completion_tokens INTEGER,

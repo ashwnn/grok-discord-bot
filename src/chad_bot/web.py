@@ -13,6 +13,7 @@ from .database import GuildConfig, Database
 from .discord_api import DiscordApiClient
 from .grok_client import GrokClient
 from .service import RequestProcessor
+from .yaml_config import YAMLConfig
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +51,10 @@ def create_app(settings: Settings) -> FastAPI:
         image_model=settings.grok_image_model,
     )
     discord_api = DiscordApiClient(settings.discord_token)
-    processor = RequestProcessor(db=db, grok=grok, settings=settings)
+    yaml_config = YAMLConfig()
+    processor = RequestProcessor(db=db, grok=grok, settings=settings, yaml_config=yaml_config)
 
-    app = FastAPI(title="Grok Discord Bot Admin")
+    app = FastAPI(title="Chad Bot Admin")
 
     templates = Jinja2Templates(directory="templates")
     app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -68,15 +70,40 @@ def create_app(settings: Settings) -> FastAPI:
         await db.close()
 
     async def require_admin(request: Request) -> str:
+        """
+        Extract and validate admin credentials from request.
+        Returns the admin user ID if valid, raises HTTPException otherwise.
+        """
         user_id = request.headers.get("X-Discord-User-ID")
-        guild_id = request.path_params.get("guild_id") or request.query_params.get("guild_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Missing X-Discord-User-ID header")
+        
+        # Try to get guild_id from various sources
+        guild_id = None
+        
+        # 1. Try path params (for routes like /guilds/{guild_id}/...)
+        if hasattr(request, "path_params") and "guild_id" in request.path_params:
+            guild_id = request.path_params["guild_id"]
+        
+        # 2. Try query params
+        if not guild_id and request.query_params.get("guild_id"):
+            guild_id = request.query_params.get("guild_id")
+        
+        # 3. For approval endpoints, look up message and get guild_id from it
         if not guild_id and "message_id" in request.path_params:
-            message = await db.get_message(int(request.path_params["message_id"]))
-            guild_id = message["guild_id"] if message else None
-        if not user_id or not guild_id:
-            raise HTTPException(status_code=401, detail="Missing admin identity or guild")
+            try:
+                message = await db.get_message(int(request.path_params["message_id"]))
+                guild_id = message["guild_id"] if message else None
+            except (ValueError, TypeError):
+                pass
+        
+        if not guild_id:
+            raise HTTPException(status_code=400, detail="Could not determine guild_id from request")
+        
+        # Verify admin status
         if not await db.is_admin(user_id, guild_id):
             raise HTTPException(status_code=403, detail="Not an admin for this guild")
+        
         return user_id
 
     @app.get("/", response_class=HTMLResponse)
@@ -183,6 +210,16 @@ def create_app(settings: Settings) -> FastAPI:
             },
         )
 
+    @app.get("/messages", response_class=HTMLResponse)
+    async def messages_page(request: Request):
+        return templates.TemplateResponse(
+            "messages.html",
+            {
+                "request": request,
+                "page": "messages",
+            },
+        )
+
     @app.get("/api/guilds/{guild_id}/config")
     async def get_config(guild_id: str, user: str = Depends(require_admin)):
         config = await db.get_guild_config(guild_id)
@@ -243,6 +280,36 @@ def create_app(settings: Settings) -> FastAPI:
             await db.conn.commit()
         return {"status": "removed"}
 
+    # YAML Configuration endpoints
+    @app.get("/api/yaml-config")
+    async def get_yaml_config():
+        """Get all YAML configuration values."""
+        return yaml_config.get_all()
+
+    class YAMLConfigUpdate(BaseModel):
+        updates: Dict[str, Any]
+
+    @app.post("/api/yaml-config")
+    async def update_yaml_config(payload: YAMLConfigUpdate):
+        """Update YAML configuration values."""
+        yaml_config.update(payload.updates)
+        return {"status": "updated", "config": yaml_config.get_all()}
+
+    @app.get("/api/yaml-config/messages")
+    async def get_yaml_messages():
+        """Get all bot messages from YAML config."""
+        return yaml_config.get("messages", {})
+
+    @app.get("/api/yaml-config/system-prompt")
+    async def get_yaml_system_prompt():
+        """Get system prompt from YAML config."""
+        return {"system_prompt": yaml_config.get_system_prompt()}
+
+    @app.get("/api/yaml-config/bot-settings")
+    async def get_yaml_bot_settings():
+        """Get bot settings (prefix/suffix) from YAML config."""
+        return yaml_config.get("bot_settings", {})
+
     async def _send_discord_message(channel_id: str, content: str, mention_id: Optional[str] = None, image_url: Optional[str] = None):
         try:
             await discord_api.send_message(channel_id=channel_id, content=content, mention_user_id=mention_id, embed_url=image_url)
@@ -254,7 +321,7 @@ def create_app(settings: Settings) -> FastAPI:
         if message["command_type"] == "ask":
             try:
                 result = await grok.chat(
-                    system_prompt=cfg.system_prompt,
+                    system_prompt=yaml_config.get_system_prompt() or cfg.system_prompt,
                     user_content=message["user_content"],
                     temperature=cfg.temperature,
                     max_tokens=cfg.max_completion_tokens,
@@ -272,6 +339,10 @@ def create_app(settings: Settings) -> FastAPI:
             total_tokens = usage.get("total_tokens", 0) or 0
             if total_tokens:
                 await db.increment_daily_chat_usage(message["guild_id"], message["user_id"], total_tokens)
+            
+            # Format reply with prefix/suffix
+            formatted_content = yaml_config.format_reply(result.content)
+            
             await db.update_message_status(
                 message["id"],
                 status="approved_grok",
@@ -285,39 +356,13 @@ def create_app(settings: Settings) -> FastAPI:
             )
             await _send_discord_message(
                 channel_id=message["channel_id"],
-                content=result.content,
+                content=formatted_content,
                 mention_id=message["user_id"],
             )
-            return {"status": "approved_grok", "reply": result.content}
-        if message["command_type"] == "image":
-            try:
-                img = await grok.generate_image(prompt=message["user_content"])
-            except Exception as exc:  # noqa: BLE001
-                await db.update_message_status(
-                    message["id"],
-                    status="error",
-                    decision="grok",
-                    error_code="grok_error",
-                    error_detail=str(exc),
-                )
-                raise HTTPException(status_code=502, detail="Image generation failed")
-            url = img.urls[0] if img.urls else None
-            await db.increment_daily_image_usage(message["guild_id"], message["user_id"], 1)
-            await db.update_message_status(
-                message["id"],
-                status="approved_grok",
-                decision="grok",
-                grok_image_urls=img.urls,
-                approved_by_admin_id=admin_id,
-            )
-            await _send_discord_message(
-                channel_id=message["channel_id"],
-                content="Here's your approved image.",
-                mention_id=message["user_id"],
-                image_url=url,
-            )
-            return {"status": "approved_grok", "reply": url}
-        raise HTTPException(status_code=400, detail="Unknown command type")
+            return {"status": "approved_grok", "reply": formatted_content}
+        
+        # Image generation has been removed
+        raise HTTPException(status_code=400, detail="Unknown or unsupported command type")
 
     @app.post("/api/approvals/{message_id}")
     async def approve(message_id: int, payload: ApprovalDecision, admin_id: str = Depends(require_admin)):
@@ -329,7 +374,8 @@ def create_app(settings: Settings) -> FastAPI:
         if payload.decision == "grok":
             return await _process_grok(message, admin_id)
         if payload.decision == "manual":
-            manual_text = payload.manual_reply_content or "Admin reply."
+            manual_text = payload.manual_reply_content or yaml_config.get_message("manual_reply_default")
+            formatted_manual = yaml_config.format_reply(manual_text)
             await db.update_message_status(
                 message_id,
                 status="approved_manual",
@@ -339,12 +385,13 @@ def create_app(settings: Settings) -> FastAPI:
             )
             await _send_discord_message(
                 channel_id=message["channel_id"],
-                content=manual_text,
+                content=formatted_manual,
                 mention_id=message["user_id"],
             )
-            return {"status": "approved_manual", "reply": manual_text}
+            return {"status": "approved_manual", "reply": formatted_manual}
         if payload.decision == "reject":
-            reply_text = payload.reason or "Request rejected by an admin."
+            reply_text = payload.reason or yaml_config.get_message("rejection_default")
+            formatted_rejection = yaml_config.format_reply(reply_text)
             await db.update_message_status(
                 message_id,
                 status="rejected",
@@ -354,10 +401,10 @@ def create_app(settings: Settings) -> FastAPI:
             )
             await _send_discord_message(
                 channel_id=message["channel_id"],
-                content=reply_text,
+                content=formatted_rejection,
                 mention_id=message["user_id"],
             )
-            return {"status": "rejected", "reply": reply_text}
+            return {"status": "rejected", "reply": formatted_rejection}
         raise HTTPException(status_code=400, detail="Invalid decision")
 
     @app.get("/health")
@@ -375,7 +422,7 @@ def run() -> None:
 
     logging.basicConfig(level=logging.INFO)
     settings = Settings()
-    uvicorn.run("grok_bot.web:app", host=settings.web_host, port=settings.web_port, reload=False)
+    uvicorn.run("chad_bot.web:app", host=settings.web_host, port=settings.web_port, reload=False)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,12 @@
 services:
   web:
-    build: .
-    image: grok-discord-bot:latest
-    container_name: grok-bot-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chad-bot-web
     env_file: .env
     environment:
-      - DATABASE_PATH=/data/grok_bot.sqlite3
+      - DATABASE_PATH=/data/chad.sqlite3
       - PYTHONPATH=/app/src
     ports:
       - "${WEB_PORT:-8000}:${WEB_PORT:-8000}"
@@ -14,7 +15,8 @@ services:
       - ./templates:/app/templates:ro
       - ./static:/app/static:ro
       - ./src:/app/src:ro
-    command: sh -c "python -m grok_bot.web"
+      - ./config:/app/config
+    command: sh -c "python -m chad_bot.web"
     restart: unless-stopped
     networks:
       - apps
@@ -25,28 +27,30 @@ services:
       retries: 3
 
   bot:
-    build: .
-    image: grok-discord-bot:latest
-    container_name: grok-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chad-bot
     env_file: .env
     environment:
-      - DATABASE_PATH=/data/grok_bot.sqlite3
+      - DATABASE_PATH=/data/chad.sqlite3
       - PYTHONPATH=/app/src
     volumes:
       - ./data:/data
       - ./src:/app/src:ro
-    command: sh -c "python -m grok_bot.bot"
+      - ./config:/app/config
+    command: sh -c "python -m chad_bot.bot"
     depends_on:
       - web
     restart: unless-stopped
     networks:
       - apps
     healthcheck:
-      test: ["CMD", "sh", "-c", "ps aux | grep -v grep | grep -q 'grok_bot' || exit 1"]
+      test: ["CMD", "sh", "-c", "ps aux | grep -v grep | grep -q 'chad_bot' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
 
 networks:
   apps:
-    external: true
+    driver: bridge
