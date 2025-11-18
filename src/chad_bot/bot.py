@@ -127,42 +127,12 @@ class ChadBot(commands.Bot):
             )
 
 
-def _guild_id(ctx: commands.Context) -> Optional[str]:
-    return str(ctx.guild.id) if ctx.guild else None
-
-
-def _channel_id(ctx: commands.Context) -> str:
-    return str(ctx.channel.id)
-
-
-def _user_id(ctx: commands.Context) -> str:
-    return str(ctx.author.id)
-
-
-def _is_admin_user(ctx: commands.Context) -> bool:
-    perms = ctx.author.guild_permissions if hasattr(ctx.author, "guild_permissions") else None
-    return bool(perms and (perms.administrator or perms.manage_guild))
-
-
-def _admin_label(ctx: commands.Context) -> str:
-    return " (admin)" if _is_admin_user(ctx) else ""
-
-
-async def _determine_admin(db: Database, ctx: commands.Context) -> bool:
-    guild_id = _guild_id(ctx)
-    if not guild_id:
-        return False
-    db_admin = await db.is_admin(_user_id(ctx), guild_id)
-    return db_admin or _is_admin_user(ctx)
-
-
 def create_bot(settings: Settings) -> ChadBot:
     db = Database(settings.database_path)
     grok = GrokClient(
         api_key=settings.grok_api_key,
         api_base=settings.grok_api_base,
         chat_model=settings.grok_chat_model,
-        image_model=settings.grok_image_model,
     )
     yaml_config = YAMLConfig()
     processor = RequestProcessor(db=db, grok=grok, settings=settings, yaml_config=yaml_config)

@@ -24,13 +24,9 @@ class ConfigUpdate(BaseModel):
     admin_bypass_auto_approve: Optional[bool] = None
     ask_window_seconds: Optional[int] = Field(None, ge=1)
     ask_max_per_window: Optional[int] = Field(None, ge=1)
-    image_window_seconds: Optional[int] = Field(None, ge=1)
-    image_max_per_window: Optional[int] = Field(None, ge=1)
     duplicate_window_seconds: Optional[int] = Field(None, ge=1)
     user_daily_chat_token_limit: Optional[int] = Field(None, ge=0)
     global_daily_chat_token_limit: Optional[int] = Field(None, ge=0)
-    user_daily_image_limit: Optional[int] = Field(None, ge=0)
-    global_daily_image_limit: Optional[int] = Field(None, ge=0)
     system_prompt: Optional[str] = None
     temperature: Optional[float] = None
     max_completion_tokens: Optional[int] = None
@@ -50,7 +46,6 @@ def create_app(settings: Settings) -> FastAPI:
         api_key=settings.grok_api_key,
         api_base=settings.grok_api_base,
         chat_model=settings.grok_chat_model,
-        image_model=settings.grok_image_model,
     )
     discord_api = DiscordApiClient(settings.discord_token)
     yaml_config = YAMLConfig()

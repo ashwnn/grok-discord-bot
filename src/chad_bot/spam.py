@@ -15,8 +15,6 @@ KEYBOARD_ROWS = [
     "zxcvbnm",
     "1234567890"
 ]
-# Pre-compile keyboard row patterns for efficient matching
-KEYBOARD_PATTERNS = [re.compile(re.escape(row[i:i+4])) for row in KEYBOARD_ROWS for i in range(len(row) - 3)]
 
 @dataclass
 class ValidationResult:

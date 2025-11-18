@@ -20,7 +20,6 @@ class Settings:
     grok_api_key: Optional[str] = os.getenv("GROK_API_KEY")
     grok_api_base: str = os.getenv("GROK_API_BASE", "https://api.x.ai/v1")
     grok_chat_model: str = os.getenv("GROK_CHAT_MODEL", "grok-beta")
-    grok_image_model: str = os.getenv("GROK_IMAGE_MODEL", "grok-image-1")
     database_path: str = os.getenv("DATABASE_PATH", "chad.sqlite3")
     web_host: str = os.getenv("WEB_HOST", "0.0.0.0")
     web_port: int = int(os.getenv("WEB_PORT", "8000"))
