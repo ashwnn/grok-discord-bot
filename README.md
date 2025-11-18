@@ -1,6 +1,6 @@
 # Chad - Discord AI Bot
 
-A feature-rich Discord bot powered by Grok AI with a comprehensive web-based admin dashboard.
+A feature-rich Discord bot powered by Grok AI with a comprehensive web-based admin dashboard. Designed to be offensive.
 
 ## Features
 
@@ -156,15 +156,6 @@ chad/
 └── README.md
 ```
 
-## Admin Setup
-
-1. **First-time setup**: On first visit to the web UI, you'll be prompted for your Discord User ID
-2. **Add yourself as admin**:
-   ```bash
-   sqlite3 data/chad.sqlite3 "INSERT INTO admin_users (discord_user_id, guild_id) VALUES ('YOUR_DISCORD_ID', 'GUILD_ID');"
-   ```
-3. **Or use the Web UI**: Once you're an admin, you can add other admins through the Admin Users page
-
 ## Database
 
 The bot uses SQLite with the following main tables:
@@ -173,24 +164,6 @@ The bot uses SQLite with the following main tables:
 - `message_log` - Complete message history
 - `user_daily_usage` - Per-user daily token tracking
 - `guild_daily_usage` - Per-guild daily token tracking
-
-## Features Removed
-
-- Image generation has been removed from the bot (database columns retained for historical data)
-- All commands now use Discord slash commands instead of prefix commands (!ask -> /ask)
-
-## Development
-
-### Running Tests
-```bash
-pytest tests/ -v
-```
-
-### Code Style
-The project follows PEP 8 guidelines. Format code with:
-```bash
-black src/
-```
 
 ## License
 Licensed under [CC BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/), Attribution-NonCommercial-ShareAlike 4.0 International.
