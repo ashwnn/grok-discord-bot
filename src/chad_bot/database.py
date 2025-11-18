@@ -152,6 +152,11 @@ class Database:
                 responded_at TEXT,
                 deleted_at TEXT
             );
+
+            CREATE INDEX IF NOT EXISTS idx_message_log_guild_id ON message_log(guild_id);
+            CREATE INDEX IF NOT EXISTS idx_message_log_guild_user_created ON message_log(guild_id, user_id, created_at);
+            CREATE INDEX IF NOT EXISTS idx_message_log_status_created ON message_log(status, created_at);
+            CREATE INDEX IF NOT EXISTS idx_message_log_guild_user_cmd_created ON message_log(guild_id, user_id, command_type, created_at);
             """
         )
         await self._ensure_column("guild_config", "duplicate_window_seconds INTEGER DEFAULT 60")
