@@ -29,9 +29,6 @@
         <a href="/guilds/{{ guild_id }}/config" class="nav-link {% if page == 'config' %}active{% endif %}">
           Configuration
         </a>
-        <a href="/guilds/{{ guild_id }}/admins" class="nav-link {% if page == 'admins' %}active{% endif %}">
-          Admin Users
-        </a>
         <a href="/guilds/{{ guild_id }}/queue" class="nav-link {% if page == 'queue' %}active{% endif %}">
           Approval Queue
         </a>
@@ -43,7 +40,7 @@
         </a>
         {% else %}
         <a href="/" class="nav-link {% if page == 'dashboard' %}active{% endif %}">Guilds</a>
-        <a href="/messages" class="nav-link {% if page == 'messages' %}active{% endif %}">Bot Messages</a>
+        <a href="/messages" class="nav-link {% if page == 'messages' %}active{% endif %}">Configuration</a>
         {% endif %}
       </nav>
     </header>
@@ -57,25 +54,10 @@
   </div>
 
   <script>
-    const adminUserId = localStorage.getItem("adminUserId") || "";
-    if (adminUserId) {
-      window.adminHeaders = {"Content-Type": "application/json", "X-Discord-User-ID": adminUserId};
-    }
-
     function toggleNav() {
       const nav = document.getElementById("main-nav");
       if (nav) {
         nav.classList.toggle("open");
-      }
-    }
-
-    function setAdminUserId() {
-      if (!adminUserId) {
-        const userId = prompt("Enter your Discord user ID for admin actions:");
-        if (userId) {
-          localStorage.setItem("adminUserId", userId);
-          location.reload();
-        }
       }
     }
   </script>

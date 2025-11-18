@@ -35,8 +35,8 @@
         <td>
           {% if item.command_type == 'ask' %}
           <span class="pill">Chat</span>
-          {% elif item.command_type == 'image' %}
-          <span class="pill">Image</span>
+          {% else %}
+          <span class="pill">{{ item.command_type }}</span>
           {% endif %}
         </td>
         <td class="text-sm preview-cell">{{ item.user_content[:80] }}</td>
@@ -246,12 +246,6 @@ function expandItem(button) {
 }
 
 async function approve(id, decision) {
-  setAdminUserId();
-  if (!adminHeaders) {
-    alert("Please set your Discord user ID first");
-    return;
-  }
-
   const body = { decision };
   
   if (decision === "reject") {
@@ -269,7 +263,7 @@ async function approve(id, decision) {
   try {
     const res = await fetch(`/api/approvals/${id}`, {
       method: "POST",
-      headers: adminHeaders,
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify(body),
     });
     

@@ -339,16 +339,8 @@
   let currentConfig = {};
 
   async function loadMessages() {
-    setAdminUserId();
-    if (!adminHeaders) {
-      alert("Please set your Discord user ID first");
-      return;
-    }
-
     try {
-      const response = await fetch('/api/yaml-config', {
-        headers: adminHeaders || {}
-      });
+      const response = await fetch('/api/yaml-config');
       const data = await response.json();
       currentConfig = data;
       
@@ -376,11 +368,6 @@
 
   async function saveMessages(e) {
     e.preventDefault();
-    setAdminUserId();
-    if (!adminHeaders) {
-      alert("Please set your Discord user ID first");
-      return;
-    }
 
     const updates = {
       'bot_settings.reply_prefix': document.getElementById('reply_prefix').value,
@@ -406,7 +393,7 @@
     try {
       const response = await fetch('/api/yaml-config', {
         method: 'POST',
-        headers: adminHeaders || {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ updates })
       });
       

@@ -42,15 +42,9 @@
   </div>
 
   <div class="card">
-    <h3>Today's Images</h3>
-    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">
-      {{ usage.guild.images_generated }} <span style="font-size: 0.875rem; color: var(--color-text-muted);">/ {{ config.global_daily_image_limit }}</span>
-    </p>
-    {% set img_pct = (usage.guild.images_generated / config.global_daily_image_limit * 100) | round %}
-    <div style="background: var(--color-bg-app); border-radius: 4px; height: 6px; margin: 12px 0; overflow: hidden;">
-      <div style="background: var(--color-green-500); height: 100%; width: {{ img_pct }}%;"></div>
-    </div>
-    <p class="muted text-sm">Guild daily limit</p>
+    <h3>Pending Approvals</h3>
+    <p style="font-size: 1.75rem; font-weight: 700; margin: 8px 0;">{{ pending | length }}</p>
+    <a href="/guilds/{{ guild_id }}/queue" class="btn btn-sm">Review Queue →</a>
   </div>
 </div>
 
@@ -121,8 +115,8 @@
         <td>
           {% if row.command_type == 'ask' %}
           <span class="pill">Chat</span>
-          {% elif row.command_type == 'image' %}
-          <span class="pill">Image</span>
+          {% else %}
+          <span class="pill">{{ row.command_type }}</span>
           {% endif %}
         </td>
         <td>

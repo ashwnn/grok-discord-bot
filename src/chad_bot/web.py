@@ -70,43 +70,6 @@ def create_app(settings: Settings) -> FastAPI:
     templates = Jinja2Templates(directory="templates")
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    async def require_admin(request: Request) -> str:
-        """
-        Extract and validate admin credentials from request.
-        Returns the admin user ID if valid, raises HTTPException otherwise.
-        """
-        user_id = request.headers.get("X-Discord-User-ID")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Missing X-Discord-User-ID header")
-        
-        # Try to get guild_id from various sources
-        guild_id = None
-        
-        # 1. Try path params (for routes like /guilds/{guild_id}/...)
-        if hasattr(request, "path_params") and "guild_id" in request.path_params:
-            guild_id = request.path_params["guild_id"]
-        
-        # 2. Try query params
-        if not guild_id and request.query_params.get("guild_id"):
-            guild_id = request.query_params.get("guild_id")
-        
-        # 3. For approval endpoints, look up message and get guild_id from it
-        if not guild_id and "message_id" in request.path_params:
-            try:
-                message = await db.get_message(int(request.path_params["message_id"]))
-                guild_id = message["guild_id"] if message else None
-            except (ValueError, TypeError):
-                pass
-        
-        if not guild_id:
-            raise HTTPException(status_code=400, detail="Could not determine guild_id from request")
-        
-        # Verify admin status
-        if not await db.is_admin(user_id, guild_id):
-            raise HTTPException(status_code=403, detail="Not an admin for this guild")
-        
-        return user_id
-
     @app.get("/", response_class=HTMLResponse)
     async def index(request: Request):
         guilds = await db.list_guilds()
@@ -201,17 +164,6 @@ def create_app(settings: Settings) -> FastAPI:
             },
         )
 
-    @app.get("/guilds/{guild_id}/admins", response_class=HTMLResponse)
-    async def admins_page(request: Request, guild_id: str):
-        return templates.TemplateResponse(
-            "admins.html",
-            {
-                "request": request,
-                "page": "admins",
-                "guild_id": guild_id,
-            },
-        )
-
     @app.get("/messages", response_class=HTMLResponse)
     async def messages_page(request: Request):
         return templates.TemplateResponse(
@@ -223,12 +175,12 @@ def create_app(settings: Settings) -> FastAPI:
         )
 
     @app.get("/api/guilds/{guild_id}/config")
-    async def get_config(guild_id: str, user: str = Depends(require_admin)):
+    async def get_config(guild_id: str):
         config = await db.get_guild_config(guild_id)
         return config.__dict__
 
     @app.post("/api/guilds/{guild_id}/config")
-    async def update_config(guild_id: str, payload: ConfigUpdate, user: str = Depends(require_admin)):
+    async def update_config(guild_id: str, payload: ConfigUpdate):
         current = await db.get_guild_config(guild_id)
         update_data = current.__dict__
         for key, value in payload.model_dump(exclude_none=True).items():
@@ -237,7 +189,7 @@ def create_app(settings: Settings) -> FastAPI:
         return updated.__dict__
 
     @app.get("/api/guilds/{guild_id}/pending")
-    async def list_pending(guild_id: str, user: str = Depends(require_admin)):
+    async def list_pending(guild_id: str):
         return await db.pending_messages(guild_id)
 
     @app.get("/api/guilds/{guild_id}/history")
@@ -246,41 +198,12 @@ def create_app(settings: Settings) -> FastAPI:
         limit: int = 50,
         status: Optional[str] = None,
         command_type: Optional[str] = None,
-        user: str = Depends(require_admin),
     ):
         return await db.history(guild_id, limit=limit, status=status, command_type=command_type)
 
     @app.get("/api/guilds/{guild_id}/analytics")
-    async def get_analytics(guild_id: str, user: str = Depends(require_admin)):
+    async def get_analytics(guild_id: str):
         return await db.analytics(guild_id)
-
-    @app.get("/api/guilds/{guild_id}/admins")
-    async def list_admins(guild_id: str, user: str = Depends(require_admin)):
-        # For now return empty list - could expand to show actual admin users from db
-        async with db.conn.execute(
-            "SELECT discord_user_id, role, created_at FROM admin_users WHERE guild_id = ? ORDER BY created_at",
-            (guild_id,),
-        ) as cur:
-            rows = await cur.fetchall()
-            return [dict(r) for r in rows]
-
-    class AdminUserCreate(BaseModel):
-        discord_user_id: str
-
-    @app.post("/api/guilds/{guild_id}/admins")
-    async def add_admin_user(guild_id: str, payload: AdminUserCreate, user: str = Depends(require_admin)):
-        await db.add_admin(payload.discord_user_id, guild_id, role="admin")
-        return {"status": "added", "discord_user_id": payload.discord_user_id}
-
-    @app.delete("/api/guilds/{guild_id}/admins/{admin_user_id}")
-    async def remove_admin_user(guild_id: str, admin_user_id: str, user: str = Depends(require_admin)):
-        async with db._lock:
-            await db.conn.execute(
-                "DELETE FROM admin_users WHERE discord_user_id = ? AND guild_id = ?",
-                (admin_user_id, guild_id),
-            )
-            await db.conn.commit()
-        return {"status": "removed"}
 
     # YAML Configuration endpoints
     @app.get("/api/yaml-config")
@@ -318,7 +241,7 @@ def create_app(settings: Settings) -> FastAPI:
         except Exception as exc:  # noqa: BLE001
             logger.exception("Could not send Discord message: %s", exc)
 
-    async def _process_grok(message: Dict[str, Any], admin_id: str) -> Dict[str, Any]:
+    async def _process_grok(message: Dict[str, Any]) -> Dict[str, Any]:
         cfg = await db.get_guild_config(message["guild_id"])
         if message["command_type"] == "ask":
             # Use guild-specific system prompt, fallback to YAML config if not set
@@ -358,7 +281,6 @@ def create_app(settings: Settings) -> FastAPI:
                 completion_tokens=usage.get("completion_tokens"),
                 total_tokens=usage.get("total_tokens"),
                 estimated_cost_usd=(prompt_tokens / 1_000_000.0 * processor.prompt_price_per_m_token + completion_tokens / 1_000_000.0 * processor.completion_price_per_m_token) if (prompt_tokens or completion_tokens) else None,
-                approved_by_admin_id=admin_id,
             )
             await _send_discord_message(
                 channel_id=message["channel_id"],
@@ -371,14 +293,14 @@ def create_app(settings: Settings) -> FastAPI:
         raise HTTPException(status_code=400, detail="Unknown or unsupported command type")
 
     @app.post("/api/approvals/{message_id}")
-    async def approve(message_id: int, payload: ApprovalDecision, admin_id: str = Depends(require_admin)):
+    async def approve(message_id: int, payload: ApprovalDecision):
         message = await db.get_message(message_id)
         if not message:
             raise HTTPException(status_code=404, detail="Message not found")
         if message["status"] != "pending_approval":
             raise HTTPException(status_code=400, detail="Message not pending")
         if payload.decision == "grok":
-            return await _process_grok(message, admin_id)
+            return await _process_grok(message)
         if payload.decision == "manual":
             manual_text = payload.manual_reply_content or yaml_config.get_message("manual_reply_default")
             formatted_manual = yaml_config.format_reply(manual_text)
@@ -387,7 +309,6 @@ def create_app(settings: Settings) -> FastAPI:
                 status="approved_manual",
                 decision="manual",
                 manual_reply_content=manual_text,
-                approved_by_admin_id=admin_id,
             )
             await _send_discord_message(
                 channel_id=message["channel_id"],
@@ -402,7 +323,6 @@ def create_app(settings: Settings) -> FastAPI:
                 message_id,
                 status="rejected",
                 decision="reject",
-                approved_by_admin_id=admin_id,
                 error_detail=payload.reason,
             )
             await _send_discord_message(

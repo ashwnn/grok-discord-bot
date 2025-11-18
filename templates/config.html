@@ -24,14 +24,6 @@
         <label for="ask_max_per_window">/ask Max per Window</label>
         <input type="number" id="ask_max_per_window" name="ask_max_per_window" value="{{ config.ask_max_per_window }}" min="1" required>
       </div>
-      <div class="form-group">
-        <label for="image_window_seconds">/image Window (seconds)</label>
-        <input type="number" id="image_window_seconds" name="image_window_seconds" value="{{ config.image_window_seconds }}" min="1" required>
-      </div>
-      <div class="form-group">
-        <label for="image_max_per_window">/image Max per Window</label>
-        <input type="number" id="image_max_per_window" name="image_max_per_window" value="{{ config.image_max_per_window }}" min="1" required>
-      </div>
     </div>
 
     <div class="form-group">
@@ -57,14 +49,6 @@
       <div class="form-group">
         <label for="global_daily_chat_token_limit">Guild Daily Chat Token Limit</label>
         <input type="number" id="global_daily_chat_token_limit" name="global_daily_chat_token_limit" value="{{ config.global_daily_chat_token_limit }}" min="0" required>
-      </div>
-      <div class="form-group">
-        <label for="user_daily_image_limit">User Daily Image Limit</label>
-        <input type="number" id="user_daily_image_limit" name="user_daily_image_limit" value="{{ config.user_daily_image_limit }}" min="0" required>
-      </div>
-      <div class="form-group">
-        <label for="global_daily_image_limit">Guild Daily Image Limit</label>
-        <input type="number" id="global_daily_image_limit" name="global_daily_image_limit" value="{{ config.global_daily_image_limit }}" min="0" required>
       </div>
     </div>
   </section>
@@ -272,11 +256,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 document.getElementById("config-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  setAdminUserId();
-  if (!adminHeaders) {
-    alert("Please set your Discord user ID first");
-    return;
-  }
   
   const formData = new FormData(e.target);
   const payload = {};
@@ -293,7 +272,7 @@ document.getElementById("config-form").addEventListener("submit", async (e) => {
 
   const res = await fetch(`/api/guilds/${guildId}/config`, {
     method: "POST",
-    headers: adminHeaders,
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify(payload),
   });
 

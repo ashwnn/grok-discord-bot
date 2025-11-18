@@ -181,16 +181,8 @@
 
 <script>
 async function loadAdmins() {
-  setAdminUserId();
-  if (!adminHeaders) {
-    alert("Please set your Discord user ID first");
-    return;
-  }
-
   try {
-    const res = await fetch(`/api/guilds/{{ guild_id }}/admins`, {
-      headers: adminHeaders
-    });
+    const res = await fetch(`/api/guilds/{{ guild_id }}/admins`);
     
     if (!res.ok) throw new Error("Failed to load admins");
     
@@ -219,11 +211,6 @@ async function loadAdmins() {
 
 async function addAdmin(e) {
   e.preventDefault();
-  setAdminUserId();
-  if (!adminHeaders) {
-    alert("Please set your Discord user ID first");
-    return;
-  }
 
   const userId = document.getElementById("new-admin-id").value.trim();
   if (!userId) {
@@ -234,7 +221,7 @@ async function addAdmin(e) {
   try {
     const res = await fetch(`/api/guilds/{{ guild_id }}/admins`, {
       method: "POST",
-      headers: adminHeaders,
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ discord_user_id: userId })
     });
 
@@ -257,17 +244,11 @@ async function addAdmin(e) {
 
 async function removeAdmin(userId) {
   if (!confirm(`Remove admin ${userId}?`)) return;
-  
-  setAdminUserId();
-  if (!adminHeaders) {
-    alert("Please set your Discord user ID first");
-    return;
-  }
 
   try {
     const res = await fetch(`/api/guilds/{{ guild_id }}/admins/${userId}`, {
       method: "DELETE",
-      headers: adminHeaders
+      headers: {"Content-Type": "application/json"}
     });
 
     if (res.ok) {

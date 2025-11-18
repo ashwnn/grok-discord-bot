@@ -28,7 +28,6 @@
       <select name="command_type" id="command-filter">
         <option value="">All Types</option>
         <option value="ask" {% if command_type_filter == 'ask' %}selected{% endif %}>Chat (/ask)</option>
-        <option value="image" {% if command_type_filter == 'image' %}selected{% endif %}>Image (/image)</option>
       </select>
     </div>
     
@@ -58,8 +57,8 @@
         <td>
           {% if row.command_type == 'ask' %}
           <span class="pill">Chat</span>
-          {% elif row.command_type == 'image' %}
-          <span class="pill">Image</span>
+          {% else %}
+          <span class="pill">{{ row.command_type }}</span>
           {% endif %}
         </td>
         <td>
@@ -91,6 +90,12 @@
                 <h4>Request Content</h4>
                 <p class="detail-text">{{ row.user_content }}</p>
               </div>
+              {% if row.grok_response_content %}
+              <div class="detail-section">
+                <h4>Bot Reply</h4>
+                <p class="detail-text bot-reply">{{ row.grok_response_content }}</p>
+              </div>
+              {% endif %}
               <div class="detail-section">
                 <h4>Metadata</h4>
                 <dl class="detail-list">
@@ -232,8 +237,14 @@
 
   .details-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 24px;
+  }
+
+  @media (min-width: 768px) {
+    .details-grid {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   .detail-section h4 {
@@ -252,6 +263,11 @@
     word-break: break-word;
     font-family: 'Courier New', monospace;
     font-size: 0.85rem;
+  }
+
+  .detail-text.bot-reply {
+    border-left-color: #10b981;
+    background: #f0fdf4;
   }
 
   .detail-list {
@@ -280,10 +296,6 @@
   }
 
   @media (max-width: 768px) {
-    .details-grid {
-      grid-template-columns: 1fr;
-    }
-
     .filter-form {
       flex-direction: column;
     }

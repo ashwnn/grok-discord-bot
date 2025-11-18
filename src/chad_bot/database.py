@@ -392,7 +392,7 @@ class Database:
         command_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         query = """
-            SELECT id, created_at, user_id, command_type, status, user_content, total_tokens, estimated_cost_usd, decision
+            SELECT id, created_at, user_id, command_type, status, user_content, grok_response_content, total_tokens, estimated_cost_usd, decision
             FROM message_log
             WHERE guild_id=?
         """
