@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -54,20 +55,20 @@ def create_app(settings: Settings) -> FastAPI:
     yaml_config = YAMLConfig()
     processor = RequestProcessor(db=db, grok=grok, settings=settings, yaml_config=yaml_config)
 
-    app = FastAPI(title="Chad Bot Admin")
-
-    templates = Jinja2Templates(directory="templates")
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-
-    @app.on_event("startup")
-    async def _startup() -> None:
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # Startup
         await db.connect()
         await db.create_schema()
         logger.info("Web backend connected to %s", settings.database_path)
-
-    @app.on_event("shutdown")
-    async def _shutdown() -> None:
+        yield
+        # Shutdown
         await db.close()
+
+    app = FastAPI(title="Chad Bot Admin", lifespan=lifespan)
+
+    templates = Jinja2Templates(directory="templates")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
     async def require_admin(request: Request) -> str:
         """

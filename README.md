@@ -35,14 +35,22 @@ A feature-rich Discord bot powered by Grok AI with a comprehensive web-based adm
    cd chad
    ```
 
-2. **Install dependencies**
+2. **Configure Discord Bot Intents**
+   - Go to https://discord.com/developers/applications/
+   - Select your application
+   - Go to "Bot" section
+   - Under "Privileged Gateway Intents", enable:
+     - ✅ **Message Content Intent** (required for message validation)
+   - Save changes
+
+3. **Install dependencies**
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
-3. **Configure environment variables**
+4. **Configure environment variables**
    Create a `.env` file in the project root:
    ```env
    DISCORD_BOT_TOKEN=your_discord_bot_token_here
@@ -54,17 +62,17 @@ A feature-rich Discord bot powered by Grok AI with a comprehensive web-based adm
    WEB_PORT=8000
    ```
 
-4. **Run the bot**
+5. **Run the bot**
    ```bash
-   python -m grok_bot.bot
+   python -m chad_bot.bot
    ```
 
-5. **Run the web dashboard** (in another terminal)
+6. **Run the web dashboard** (in another terminal)
    ```bash
-   uvicorn grok_bot.web:app --host 0.0.0.0 --port 8000
+   python -m chad_bot.web
    ```
 
-6. **Access the dashboard**
+7. **Access the dashboard**
    Open `http://localhost:8000` in your browser
 
 ## Docker Deployment
@@ -73,7 +81,6 @@ A feature-rich Discord bot powered by Grok AI with a comprehensive web-based adm
 
 1. **Build and start services**
    ```bash
-   cd docker
    docker-compose up --build
    ```
 
@@ -117,7 +124,6 @@ This includes:
 Per-guild configuration is available through the web dashboard:
 - Rate limits (requests per time window)
 - Daily token budgets
-- Daily image budgets (legacy, kept for history)
 - Auto-approve mode
 - Admin bypass settings
 - Temperature and max tokens
@@ -127,7 +133,7 @@ Per-guild configuration is available through the web dashboard:
 ```
 chad/
 ├── src/
-│   └── grok_bot/          # Main package
+│   └── chad_bot/          # Main package
 │       ├── bot.py         # Discord bot with slash commands
 │       ├── web.py         # FastAPI web dashboard
 │       ├── service.py     # Request processing logic
@@ -136,14 +142,14 @@ chad/
 │       ├── yaml_config.py # YAML configuration manager
 │       ├── spam.py        # Input validation
 │       ├── rate_limits.py # Rate limiting
+│       ├── config.py      # Settings management
 │       └── discord_api.py # Discord messaging
 ├── config/
 │   └── config.yaml        # Bot messages and settings
 ├── templates/             # Web UI templates
 ├── static/                # CSS and assets
-├── docker/                # Docker configuration
-│   ├── Dockerfile
-│   └── docker-compose.yml
+├── Dockerfile             # Docker configuration
+├── docker-compose.yml     # Docker Compose setup
 ├── docs/                  # Documentation
 ├── data/                  # SQLite database (created at runtime)
 ├── requirements.txt       # Python dependencies
