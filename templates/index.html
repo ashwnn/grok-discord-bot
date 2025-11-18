@@ -13,13 +13,19 @@
   <div class="guilds-grid">
     {% for guild in guilds %}
     <div class="guild-card-container">
-      <a href="/guilds/{{ guild.id }}" class="guild-card">
-        <div class="guild-icon">G</div>
-        <p class="guild-name">{{ guild.name }}</p>
-        <p class="guild-id">{{ guild.id }}</p>
-        <p class="guild-link">Manage →</p>
-      </a>
-      <button class="btn btn-delete-guild" onclick="deleteGuild('{{ guild.id }}', event)" title="Delete this guild from database">Delete</button>
+      <div class="guild-card">
+        <a href="/guilds/{{ guild.id }}" class="guild-card-link">
+          {% if guild.icon_url %}
+            <img src="{{ guild.icon_url }}" alt="{{ guild.name }}" class="guild-icon-image">
+          {% else %}
+            <div class="guild-icon">{{ guild.name[0] | upper }}</div>
+          {% endif %}
+          <p class="guild-name">{{ guild.name }}</p>
+          <p class="guild-id">{{ guild.id }}</p>
+          <p class="guild-link">Manage →</p>
+        </a>
+        <button class="btn btn-delete-guild" onclick="deleteGuild('{{ guild.id }}', event)" title="Delete this guild from database">Delete</button>
+      </div>
     </div>
     {% endfor %}
   </div>
@@ -103,12 +109,24 @@
     transition: all 0.2s ease;
     cursor: pointer;
     flex: 1;
+    position: relative;
   }
 
   .guild-card:hover {
     border-color: var(--color-blue-500);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
+  }
+
+  .guild-card-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+    width: 100%;
   }
 
   .guild-icon {
@@ -122,6 +140,14 @@
     color: white;
     font-weight: 600;
     font-size: 1.25rem;
+  }
+
+  .guild-icon-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-blue-500);
   }
 
   .guild-name {
@@ -150,6 +176,7 @@
     border-color: var(--color-text-danger);
     padding: 8px 12px;
     font-size: 0.8rem;
+    width: 100%;
   }
 
   .btn-delete-guild:hover {

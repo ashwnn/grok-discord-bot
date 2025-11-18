@@ -77,9 +77,16 @@ def create_app(settings: Settings) -> FastAPI:
         guilds = []
         for guild_id in guild_ids:
             guild_info = await discord_api.get_guild(guild_id)
+            # Construct guild icon URL if available
+            icon_url = None
+            if guild_info and guild_info.get("icon"):
+                icon_hash = guild_info.get("icon")
+                icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{icon_hash}.png"
+            
             guilds.append({
                 "id": guild_id,
-                "name": guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
+                "name": guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}",
+                "icon_url": icon_url
             })
         return templates.TemplateResponse(
             "index.html",
