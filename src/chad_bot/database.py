@@ -392,7 +392,7 @@ class Database:
         command_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         query = """
-            SELECT id, created_at, user_id, command_type, status, user_content, total_tokens, decision
+            SELECT id, created_at, user_id, command_type, status, user_content, total_tokens, estimated_cost_usd, decision
             FROM message_log
             WHERE guild_id=?
         """
@@ -410,7 +410,7 @@ class Database:
             return [dict(r) for r in rows]
 
     async def analytics(self, guild_id: str) -> Dict[str, Any]:
-        data: Dict[str, Any] = {"status_counts": {}, "token_total": 0, "image_requests": 0}
+        data: Dict[str, Any] = {"status_counts": {}, "token_total": 0, "image_requests": 0, "total_cost_usd": 0.0}
         async with self.conn.execute(
             """
             SELECT status, COUNT(*) as cnt FROM message_log
@@ -423,7 +423,8 @@ class Database:
         async with self.conn.execute(
             """
             SELECT SUM(total_tokens) as token_total,
-                   SUM(CASE WHEN command_type='image' THEN 1 ELSE 0 END) as image_requests
+                   SUM(CASE WHEN command_type='image' THEN 1 ELSE 0 END) as image_requests,
+                   SUM(COALESCE(estimated_cost_usd, 0)) as total_cost_usd
             FROM message_log
             WHERE guild_id=?;
             """,
@@ -433,6 +434,7 @@ class Database:
             if row:
                 data["token_total"] = row["token_total"] or 0
                 data["image_requests"] = row["image_requests"] or 0
+                data["total_cost_usd"] = row["total_cost_usd"] or 0.0
         return data
 
     async def recent_messages(self, guild_id: str, limit: int = 25) -> List[Dict[str, Any]]:

@@ -110,8 +110,6 @@ def create_app(settings: Settings) -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     async def index(request: Request):
         guilds = await db.list_guilds()
-        if guilds:
-            return RedirectResponse(url=f"/guilds/{guilds[0]}")
         return templates.TemplateResponse(
             "index.html",
             {"request": request, "guilds": guilds},
