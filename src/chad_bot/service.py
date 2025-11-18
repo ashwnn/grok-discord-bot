@@ -24,11 +24,11 @@ class RequestProcessor:
         self.grok = grok
         self.settings = settings
         self.yaml_config = yaml_config or YAMLConfig()
-    # Model pricing is in USD per 1,000,000 tokens.
-    # Prompt (input) tokens are charged at a different rate than completion (output) tokens.
-    # From the attached pricing, grok-3-mini appears to be $0.30 (input) and $0.50 (output) per M tokens.
-    self.prompt_price_per_m_token = 0.30
-    self.completion_price_per_m_token = 0.50
+        # Model pricing is in USD per 1,000,000 tokens.
+        # Prompt (input) tokens are charged at a different rate than completion (output) tokens.
+        # From the attached pricing, grok-3-mini appears to be $0.30 (input) and $0.50 (output) per M tokens.
+        self.prompt_price_per_m_token = 0.30
+        self.completion_price_per_m_token = 0.50
 
     async def _check_duplicate(self, guild_id: str, user_id: str, content: str, window_seconds: int) -> bool:
         async with self.db.conn.execute(
