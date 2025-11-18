@@ -193,3 +193,15 @@ black src/
 ```
 
 ## License
+Licensed under [CC BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/), Attribution-NonCommercial-ShareAlike 4.0 International.
+
+You are free to:
+
+* Share: copy and redistribute the material
+* Adapt: remix, transform, and build upon the material
+
+Under the following terms:
+
+* Attribution: you must give appropriate credit.
+* NonCommercial: you may not use the material for commercial purposes.
+* ShareAlike: if you remix or adapt, you must distribute your contributions under the same license.
