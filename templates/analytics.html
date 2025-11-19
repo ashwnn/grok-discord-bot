@@ -1,138 +1,155 @@
 {% extends "base.html" %}
-{% block title %}Analytics - Grok Discord Bot Admin{% endblock %}
-
-{% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-{% endblock %}
+{% block title %}Analytics - Chad Bot{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h2>Analytics</h2>
-  <p class="page-subtitle">Guild usage and request breakdown</p>
-</div>
-
-<div class="grid grid-cols-3">
-  <div class="card stat-card">
-    <p class="stat-label">Total Requests</p>
-    <p class="stat-value">{{ analytics.status_counts.values() | sum | default(0) }}</p>
-    <p class="stat-subtitle">All time</p>
-  </div>
-
-  <div class="card stat-card">
-    <p class="stat-label">Tokens Used</p>
-    <p class="stat-value">{{ analytics.token_total | default(0) }}</p>
-    <p class="stat-subtitle">Chat token consumption</p>
-  </div>
-
-  <div class="card stat-card">
-    <p class="stat-label">Estimated Cost</p>
-    <p class="stat-value">${{ "%.4f"|format(analytics.total_cost_usd) }}</p>
-  <p class="stat-subtitle">Total API usage ({{ model_pricing.model }}: ${{ "%.2f"|format(model_pricing.prompt) }} / ${{ "%.2f"|format(model_pricing.completion) }} per M tokens)</p>
+<div class="md:flex md:items-center md:justify-between mb-8">
+  <div class="min-w-0 flex-1">
+    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Analytics</h2>
+    <p class="mt-1 text-sm text-gray-500">Usage statistics and performance metrics.</p>
   </div>
 </div>
 
-<div class="grid grid-cols-2">
-  <div class="card">
-    <h3>Request Status Breakdown</h3>
-    <canvas id="statusChart" style="max-height: 300px;"></canvas>
-  </div>
-
-  <div class="card">
-    <h3>Status Summary</h3>
-    <div class="status-list">
-      {% set statuses = [
-        ('auto_responded', 'Auto Responded', '--color-blue-500'),
-        ('approved_grok', 'Approved via Grok', '--color-text-success'),
-        ('approved_manual', 'Approved Manually', '--color-green-300'),
-        ('rejected', 'Rejected', '--color-text-danger'),
-        ('pending_approval', 'Pending Review', '--color-text-warning'),
-        ('error', 'Errors', '--color-red-400')
-      ] %}
-      {% for key, label, color_var_name in statuses %}
-      <div class="status-row" data-color-var="{{ color_var_name }}">
-        <div class="status-indicator" style="background-color: rgb(var({{ color_var_name }}) / 1);"></div>
-        <span class="status-label">{{ label }}</span>
-        <strong class="status-count">{{ analytics.status_counts.get(key, 0) }}</strong>
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+  <!-- Total Cost Card -->
+  <div class="bg-white overflow-hidden shadow rounded-lg">
+    <div class="p-5">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ml-5 w-0 flex-1">
+          <dl>
+            <dt class="text-sm font-medium text-gray-500 truncate">Total Estimated Cost</dt>
+            <dd>
+              <div class="text-lg font-medium text-gray-900">${{ "%.4f"|format(analytics.total_cost_usd) }}</div>
+            </dd>
+          </dl>
+        </div>
       </div>
-      {% endfor %}
+    </div>
+    <div class="bg-gray-50 px-5 py-3">
+      <div class="text-sm">
+        <span class="text-gray-500">Based on model pricing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Tokens Card -->
+  <div class="bg-white overflow-hidden shadow rounded-lg">
+    <div class="p-5">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div class="ml-5 w-0 flex-1">
+          <dl>
+            <dt class="text-sm font-medium text-gray-500 truncate">Total Tokens Used</dt>
+            <dd>
+              <div class="text-lg font-medium text-gray-900">{{ "{:,}".format(analytics.token_total) }}</div>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 px-5 py-3">
+      <div class="text-sm">
+        <span class="text-gray-500">Across all interactions</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Requests Card -->
+  <div class="bg-white overflow-hidden shadow rounded-lg">
+    <div class="p-5">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="ml-5 w-0 flex-1">
+          <dl>
+            <dt class="text-sm font-medium text-gray-500 truncate">Image Requests</dt>
+            <dd>
+              <div class="text-lg font-medium text-gray-900">{{ analytics.image_requests }}</div>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 px-5 py-3">
+      <div class="text-sm">
+        <span class="text-gray-500">Total generated images</span>
+      </div>
     </div>
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Status breakdown chart
-  const ctx = document.getElementById('statusChart').getContext('2d');
-  const statusLabels = [
-    'Auto Responded',
-    'Approved (Grok)',
-    'Approved (Manual)',
-    'Rejected',
-    'Pending Review',
-    'Errors'
-  ];
-  const statusData = [
-    {{ analytics.status_counts.get('auto_responded', 0) }},
-    {{ analytics.status_counts.get('approved_grok', 0) }},
-    {{ analytics.status_counts.get('approved_manual', 0) }},
-    {{ analytics.status_counts.get('rejected', 0) }},
-    {{ analytics.status_counts.get('pending_approval', 0) }},
-    {{ analytics.status_counts.get('error', 0) }}
-  ];
+<!-- Status Distribution -->
+<div class="bg-white shadow sm:rounded-lg mb-8">
+  <div class="px-4 py-5 sm:p-6">
+    <h3 class="text-base font-semibold leading-6 text-gray-900">Request Status Distribution</h3>
+    <div class="mt-5">
+      <div class="rounded-lg bg-gray-50 p-4">
+        <dl class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          {% for status, count in analytics.status_counts.items() %}
+          <div class="flex flex-col border-b border-gray-100 p-6 text-center sm:border-0 sm:border-r">
+            <dt class="order-2 mt-2 text-lg font-medium leading-6 text-gray-500 capitalize">{{ status.replace('_', ' ')
+              }}</dt>
+            <dd class="order-1 text-4xl font-bold tracking-tight text-brand-600">{{ count }}</dd>
+          </div>
+          {% endfor %}
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
 
-  // Read computed colors from the DOM to support light/dark mode
-  const computedStyles = getComputedStyle(document.documentElement);
-  const statusColors = Array.from(document.querySelectorAll('.status-row[data-color-var]'))
-    .map(row => {
-      const varName = row.dataset.colorVar;
-      // The style guide uses RGB components, so we read the variable
-      // and construct the rgb() string for the computed style.
-      const rgbValue = computedStyles.getPropertyValue(varName).trim();
-      return `rgb(${rgbValue})`;
-    });
-
-  // Get computed colors for chart text and borders
-  const chartBorderColor = `rgb(${computedStyles.getPropertyValue('--color-bg-base').trim()})`;
-  const chartTextColor = `rgb(${computedStyles.getPropertyValue('--color-text-muted').trim()})`;
-  const chartFontFamily = computedStyles.getPropertyValue('font-family') || "'Inter', sans-serif";
-
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: statusLabels,
-      datasets: [{
-        data: statusData,
-        backgroundColor: statusColors.length > 0 ? statusColors : [
-          // Fallback colors just in case JS fails
-          '#2563eb',
-          '#16a34a',
-          '#10b981',
-          '#dc2626',
-          '#f59e0b',
-          '#ef4444'
-        ],
-        borderColor: chartBorderColor,
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: chartTextColor,
-            font: {
-              size: 12,
-              family: chartFontFamily
-            },
-            padding: 15
-          }
-        }
-      }
-    }
-  });
-});
-</script>
+<!-- Recent Activity Table (Reused from Overview but maybe longer) -->
+<div class="bg-white shadow sm:rounded-lg">
+  <div class="border-b border-gray-200 px-4 py-5 sm:px-6">
+    <h3 class="text-base font-semibold leading-6 text-gray-900">Recent Activity</h3>
+  </div>
+  <div class="flow-root">
+    <ul role="list" class="divide-y divide-gray-200">
+      {% for item in recent %}
+      <li class="px-4 py-4 sm:px-6 hover:bg-gray-50">
+        <div class="flex items-center justify-between gap-x-6">
+          <div class="min-w-0">
+            <div class="flex items-start gap-x-3">
+              <p class="text-sm font-semibold leading-6 text-gray-900">{{ item.command_type }}</p>
+              <p class="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset
+                {% if item.status == 'approved_grok' or item.status == 'approved_manual' %}
+                  bg-green-50 text-green-700 ring-green-600/20
+                {% elif item.status == 'rejected' %}
+                  bg-red-50 text-red-700 ring-red-600/10
+                {% elif item.status == 'pending_approval' %}
+                  bg-yellow-50 text-yellow-800 ring-yellow-600/20
+                {% else %}
+                  bg-gray-50 text-gray-600 ring-gray-500/10
+                {% endif %}
+              ">
+                {{ item.status }}
+              </p>
+            </div>
+            <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+              <p class="whitespace-nowrap">User {{ item.user_id }}</p>
+              <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
+                <circle cx="1" cy="1" r="1" />
+              </svg>
+              <p class="truncate">{{ item.created_at | truncate(16, True, '') }}</p>
+            </div>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
 {% endblock %}

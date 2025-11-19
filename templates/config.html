@@ -1,207 +1,217 @@
 {% extends "base.html" %}
-{% block title %}Configuration - Grok Discord Bot Admin{% endblock %}
+{% block title %}Configuration - Chad Bot{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h2>Configuration</h2>
-  <p class="page-subtitle">Edit bot behavior, limits, and system prompt</p>
+<div class="md:flex md:items-center md:justify-between mb-8">
+  <div class="min-w-0 flex-1">
+    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Configuration</h2>
+    <p class="mt-1 text-sm text-gray-500">Manage bot settings for this guild.</p>
+  </div>
 </div>
 
-<form id="config-form" class="card">
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Rate Limits</h3>
-      <p class="section-description">How frequently users can issue commands per time window</p>
-    </div>
-    
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="ask_window_seconds">/ask Window (seconds)</label>
-        <input type="number" id="ask_window_seconds" name="ask_window_seconds" value="{{ config.ask_window_seconds }}" min="1" required>
-      </div>
-      <div class="form-group">
-        <label for="ask_max_per_window">/ask Max per Window</label>
-        <input type="number" id="ask_max_per_window" name="ask_max_per_window" value="{{ config.ask_max_per_window }}" min="1" required>
-      </div>
+<form id="configForm" class="space-y-10 divide-y divide-gray-900/10">
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Approval Settings</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Control how requests are processed and approved.</p>
     </div>
 
-    <div class="form-group">
-      <label for="duplicate_window_seconds">Duplicate Check Window (seconds)</label>
-      <input type="number" id="duplicate_window_seconds" name="duplicate_window_seconds" value="{{ config.duplicate_window_seconds }}" min="1" required>
-    </div>
-  </section>
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
 
-  <hr class="section-divider">
+          <div class="col-span-full">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium leading-6 text-gray-900">Auto-Approve Enabled</span>
+                <span class="text-sm text-gray-500">Automatically approve requests without manual review.</span>
+              </div>
+              <button type="button" id="auto_approve_toggle"
+                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 {% if config.auto_approve_enabled %}bg-brand-600{% else %}bg-gray-200{% endif %}"
+                role="switch" aria-checked="{{ 'true' if config.auto_approve_enabled else 'false' }}"
+                onclick="toggleSwitch(this)">
+                <span aria-hidden="true"
+                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {% if config.auto_approve_enabled %}translate-x-5{% else %}translate-x-0{% endif %}"></span>
+              </button>
+            </div>
+          </div>
 
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Daily Budgets</h3>
-      <p class="section-description">Token limits reset daily at midnight UTC</p>
-    </div>
+          <div class="col-span-full">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium leading-6 text-gray-900">Admin Bypass Auto-Approve</span>
+                <span class="text-sm text-gray-500">Admins skip the approval queue regardless of settings.</span>
+              </div>
+              <button type="button" id="admin_bypass_toggle"
+                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 {% if config.admin_bypass_auto_approve %}bg-brand-600{% else %}bg-gray-200{% endif %}"
+                role="switch" aria-checked="{{ 'true' if config.admin_bypass_auto_approve else 'false' }}"
+                onclick="toggleSwitch(this)">
+                <span aria-hidden="true"
+                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {% if config.admin_bypass_auto_approve %}translate-x-5{% else %}translate-x-0{% endif %}"></span>
+              </button>
+            </div>
+          </div>
 
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="user_daily_chat_token_limit">User Daily Chat Token Limit</label>
-        <input type="number" id="user_daily_chat_token_limit" name="user_daily_chat_token_limit" value="{{ config.user_daily_chat_token_limit }}" min="0" required>
-      </div>
-      <div class="form-group">
-        <label for="global_daily_chat_token_limit">Guild Daily Chat Token Limit</label>
-        <input type="number" id="global_daily_chat_token_limit" name="global_daily_chat_token_limit" value="{{ config.global_daily_chat_token_limit }}" min="0" required>
-      </div>
-    </div>
-  </section>
-
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Auto Approval</h3>
-      <p class="section-description">Require admin approval before calling Grok</p>
-    </div>
-
-    <div class="form-group">
-      <label class="toggle">
-        <label class="toggle-switch">
-          <input type="checkbox" id="auto_approve_enabled" name="auto_approve_enabled" {% if config.auto_approve_enabled %}checked{% endif %}>
-          <span class="toggle-slider"></span>
-        </label>
-        <span>Enable auto-approve queue</span>
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label class="toggle">
-        <label class="toggle-switch">
-          <input type="checkbox" id="admin_bypass_auto_approve" name="admin_bypass_auto_approve" {% if config.admin_bypass_auto_approve %}checked{% endif %}>
-          <span class="toggle-slider"></span>
-        </label>
-        <span>Admins bypass auto-approve</span>
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label for="admin_user_ids">Administrator Discord IDs</label>
-      <input type="text" id="admin_user_ids" name="admin_user_ids" value="{{ config.admin_user_ids or '' }}" placeholder="e.g., 123456789,987654321">
-      <p class="form-hint">Comma-separated Discord user IDs that can approve requests</p>
-    </div>
-  </section>
-
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Grok Model Settings</h3>
-      <p class="section-description">Configure model behavior and output</p>
-    </div>
-
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="temperature">Temperature (0.0 - 2.0)</label>
-        <input type="number" id="temperature" name="temperature" value="{{ config.temperature }}" min="0" max="2" step="0.1" required>
-        <p class="form-hint">Lower = more focused and deterministic, Higher = more creative and diverse</p>
-      </div>
-      <div class="form-group">
-        <label for="max_completion_tokens">Max Completion Tokens</label>
-        <input type="number" id="max_completion_tokens" name="max_completion_tokens" value="{{ config.max_completion_tokens }}" min="1" required>
-        <p class="form-hint">Maximum tokens for each response</p>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="max_prompt_chars">Max Prompt Characters</label>
-      <input type="number" id="max_prompt_chars" name="max_prompt_chars" value="{{ config.max_prompt_chars }}" min="1" required>
-    </div>
-  </section>
-
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Guild System Prompt</h3>
-      <p class="section-description">Per-guild instructions for bot personality and behavior. Leave empty to use global default from Messages configuration. Avoid slurs, explicit content, and graphic violence.</p>
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Rate Limits</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Configure limits to prevent abuse and manage costs.</p>
     </div>
 
-    <div class="form-group">
-      <textarea id="system_prompt" name="system_prompt"></textarea>
-      <p class="form-hint">This guild-specific system prompt overrides the global system prompt. Clear this field to use the global default.</p>
-    </div>
-  </section>
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
 
-  <div class="form-actions">
-    <button type="submit" class="btn">Save Configuration</button>
-    <div id="config-status" class="muted"></div>
+          <div class="sm:col-span-3">
+            <label for="ask_window_seconds" class="block text-sm font-medium leading-6 text-gray-900">Chat Window
+              (seconds)</label>
+            <div class="mt-2">
+              <input type="number" name="ask_window_seconds" id="ask_window_seconds"
+                value="{{ config.ask_window_seconds }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="ask_max_per_window" class="block text-sm font-medium leading-6 text-gray-900">Max Chats per
+              Window</label>
+            <div class="mt-2">
+              <input type="number" name="ask_max_per_window" id="ask_max_per_window"
+                value="{{ config.ask_max_per_window }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="user_daily_chat_token_limit" class="block text-sm font-medium leading-6 text-gray-900">User
+              Daily Token Limit</label>
+            <div class="mt-2">
+              <input type="number" name="user_daily_chat_token_limit" id="user_daily_chat_token_limit"
+                value="{{ config.user_daily_chat_token_limit }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="global_daily_chat_token_limit" class="block text-sm font-medium leading-6 text-gray-900">Global
+              Daily Token Limit</label>
+            <div class="mt-2">
+              <input type="number" name="global_daily_chat_token_limit" id="global_daily_chat_token_limit"
+                value="{{ config.global_daily_chat_token_limit }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Model Settings</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Fine-tune the AI model behavior.</p>
+    </div>
+
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+
+          <div class="col-span-full">
+            <label for="system_prompt" class="block text-sm font-medium leading-6 text-gray-900">System Prompt</label>
+            <div class="mt-2">
+              <textarea id="system_prompt" name="system_prompt" rows="3"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">{{ config.system_prompt }}</textarea>
+            </div>
+            <p class="mt-3 text-sm leading-6 text-gray-600">Instructions for the AI model.</p>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="temperature" class="block text-sm font-medium leading-6 text-gray-900">Temperature</label>
+            <div class="mt-2">
+              <input type="number" step="0.1" name="temperature" id="temperature" value="{{ config.temperature }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="max_completion_tokens" class="block text-sm font-medium leading-6 text-gray-900">Max Completion
+              Tokens</label>
+            <div class="mt-2">
+              <input type="number" name="max_completion_tokens" id="max_completion_tokens"
+                value="{{ config.max_completion_tokens }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+        <button type="button" onclick="saveConfig()"
+          class="rounded-md bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">Save
+          Changes</button>
+      </div>
+    </div>
   </div>
 </form>
 
 <script>
-const guildId = "{{ guild_id }}";
+  function toggleSwitch(btn) {
+    const isChecked = btn.getAttribute('aria-checked') === 'true';
+    const newState = !isChecked;
 
-// Load system prompt on page load
-document.addEventListener('DOMContentLoaded', async () => {
-  const promptTextarea = document.getElementById('system_prompt');
-  const currentPrompt = {{ config.system_prompt | tojson }};
-  promptTextarea.value = currentPrompt;
-});
+    btn.setAttribute('aria-checked', newState);
 
-document.getElementById("config-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  
-  const formData = new FormData(e.target);
-  const payload = {};
-  
-  // Define which fields should be numeric
-  const numericFields = [
-    'ask_window_seconds', 'ask_max_per_window',
-    'duplicate_window_seconds', 'user_daily_chat_token_limit',
-    'global_daily_chat_token_limit',
-    'temperature', 'max_completion_tokens', 'max_prompt_chars'
-  ];
-  
-  // Process all form fields
-  for (const [key, value] of formData.entries()) {
-    if (key === "auto_approve_enabled" || key === "admin_bypass_auto_approve") {
-      payload[key] = true;
-    } else if (numericFields.includes(key) && value !== "") {
-      payload[key] = Number(value);
+    if (newState) {
+      btn.classList.remove('bg-gray-200');
+      btn.classList.add('bg-brand-600');
+      btn.querySelector('span').classList.remove('translate-x-0');
+      btn.querySelector('span').classList.add('translate-x-5');
     } else {
-      payload[key] = value;
+      btn.classList.remove('bg-brand-600');
+      btn.classList.add('bg-gray-200');
+      btn.querySelector('span').classList.remove('translate-x-5');
+      btn.querySelector('span').classList.add('translate-x-0');
     }
   }
-  
-  // Explicitly set unchecked checkboxes to false
-  const checkboxes = e.target.querySelectorAll('input[type="checkbox"]');
-  checkboxes.forEach(checkbox => {
-    if (!(checkbox.name in payload)) {
-      payload[checkbox.name] = false;
-    }
-  });
 
-  const res = await fetch(`/api/guilds/${guildId}/config`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(payload),
-  });
+  async function saveConfig() {
+    const form = document.getElementById('configForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-  const status = document.getElementById("config-status");
-  if (res.ok) {
-    status.textContent = "Configuration saved";
-    status.style.color = "var(--color-text-success)";
-    console.log("Configuration saved successfully");
-  } else {
-    let errorMessage = "Error saving configuration";
+    // Add toggle values manually
+    data.auto_approve_enabled = document.getElementById('auto_approve_toggle').getAttribute('aria-checked') === 'true';
+    data.admin_bypass_auto_approve = document.getElementById('admin_bypass_toggle').getAttribute('aria-checked') === 'true';
+
+    // Convert numbers
+    ['ask_window_seconds', 'ask_max_per_window', 'user_daily_chat_token_limit', 'global_daily_chat_token_limit', 'max_completion_tokens'].forEach(key => {
+      if (data[key]) data[key] = parseInt(data[key]);
+    });
+    if (data.temperature) data.temperature = parseFloat(data.temperature);
+
     try {
-      const errorData = await res.json();
-      if (errorData.detail) {
-        errorMessage = `Error: ${errorData.detail}`;
+      const res = await fetch(`/api/guilds/{{ guild_id }}/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert('Configuration saved successfully!');
+        location.reload();
+      } else {
+        const err = await res.json();
+        alert('Error saving configuration: ' + (err.detail || 'Unknown error'));
       }
     } catch (e) {
-      // Could not parse error response
+      alert('Error saving configuration: ' + e.message);
     }
-    status.textContent = errorMessage;
-    status.style.color = "var(--color-text-danger)";
-    console.error("Failed to save configuration:", errorMessage);
   }
-  setTimeout(() => { status.textContent = ""; }, 3000);
-});
 </script>
 {% endblock %}
