@@ -435,6 +435,42 @@ def create_app(settings: Settings) -> FastAPI:
     async def health():
         return {"ok": True}
 
+    @app.get("/guilds/{guild_id}/fun", response_class=HTMLResponse)
+    async def fun_page(request: Request, guild_id: str):
+        guild_info = await discord_api.get_guild(guild_id)
+        guild_name = guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
+        return templates.TemplateResponse(
+            "fun.html",
+            {
+                "request": request,
+                "page": "fun",
+                "guild_id": guild_id,
+                "guild_name": guild_name,
+            },
+        )
+
+    class TimeoutRequest(BaseModel):
+        user_id: str
+        duration_seconds: int
+
+    @app.post("/api/guilds/{guild_id}/fun/timeout")
+    async def api_timeout_user(guild_id: str, payload: TimeoutRequest):
+        success = await discord_api.timeout_user(guild_id, payload.user_id, payload.duration_seconds)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to timeout user (check bot permissions)")
+        return {"status": "success"}
+
+    class NicknameRequest(BaseModel):
+        user_id: str
+        nickname: str
+
+    @app.post("/api/guilds/{guild_id}/fun/nickname")
+    async def api_change_nickname(guild_id: str, payload: NicknameRequest):
+        success = await discord_api.modify_member(guild_id, payload.user_id, payload.nickname)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to change nickname (check bot permissions)")
+        return {"status": "success"}
+
     return app
 
 
