@@ -3,177 +3,235 @@
 {% block title %}Bot Messages Configuration - Chad Bot Admin{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h2>Bot Messages & Settings</h2>
-  <p class="page-subtitle">Configure all bot messages, system prompt, and reply formatting</p>
+<div class="md:flex md:items-center md:justify-between mb-8">
+  <div class="min-w-0 flex-1">
+    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Bot Messages &
+      Settings</h2>
+    <p class="mt-1 text-sm text-gray-500">Configure all bot messages, system prompt, and reply formatting.</p>
+  </div>
 </div>
 
-<form id="messages-form" class="card">
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Bot Settings</h3>
-      <p class="section-description">Global reply formatting options</p>
+<form id="messages-form" class="space-y-10 divide-y divide-gray-900/10">
+
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Bot Settings</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Global reply formatting options.</p>
     </div>
 
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="reply_prefix">Reply Prefix (optional)</label>
-        <input type="text" id="reply_prefix" placeholder="Text to add before every bot reply">
-        <p class="form-hint">Leave empty for no prefix</p>
-      </div>
-      <div class="form-group">
-        <label for="reply_suffix">Reply Suffix (optional)</label>
-        <input type="text" id="reply_suffix" placeholder="Text to add after every bot reply">
-        <p class="form-hint">Leave empty for no suffix</p>
-      </div>
-    </div>
-  </section>
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          <div class="sm:col-span-3">
+            <label for="reply_prefix" class="block text-sm font-medium leading-6 text-gray-900">Reply Prefix
+              (optional)</label>
+            <div class="mt-2">
+              <input type="text" id="reply_prefix" placeholder="Text to add before every bot reply"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+            <p class="mt-1 text-sm text-gray-500">Leave empty for no prefix</p>
+          </div>
 
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Global System Prompt</h3>
-      <p class="section-description">Global default for AI's personality and behavior (can be overridden per-guild in Configuration)</p>
-    </div>
-
-    <div class="form-group">
-      <textarea id="system_prompt" rows="8" placeholder="Enter the system prompt..."></textarea>
-      <p class="form-hint">Be specific about tone, content restrictions, and desired behavior. This is the fallback when guilds don't have a custom system prompt.</p>
-    </div>
-  </section>
-
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Error & Validation Messages</h3>
-      <p class="section-description">Messages shown to users when validation fails</p>
-    </div>
-
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="msg_empty_input">Empty Input</label>
-        <input type="text" id="msg_empty_input" placeholder="Message for empty input">
-      </div>
-      <div class="form-group">
-        <label for="msg_too_short">Too Short</label>
-        <input type="text" id="msg_too_short" placeholder="Message for too short input">
-      </div>
-      <div class="form-group">
-        <label for="msg_trivial_input">Trivial Input</label>
-        <input type="text" id="msg_trivial_input" placeholder="Message for trivial input (hi, hello, test)">
-      </div>
-      <div class="form-group">
-        <label for="msg_gibberish">Gibberish</label>
-        <input type="text" id="msg_gibberish" placeholder="Message for gibberish input">
-      </div>
-      <div class="form-group">
-        <label for="msg_too_long">Too Long</label>
-        <input type="text" id="msg_too_long" placeholder="Message for too long input">
-        <p class="form-hint">Use {max_chars} for character limit</p>
-      </div>
-      <div class="form-group">
-        <label for="msg_duplicate">Duplicate</label>
-        <input type="text" id="msg_duplicate" placeholder="Message for duplicate requests">
+          <div class="sm:col-span-3">
+            <label for="reply_suffix" class="block text-sm font-medium leading-6 text-gray-900">Reply Suffix
+              (optional)</label>
+            <div class="mt-2">
+              <input type="text" id="reply_suffix" placeholder="Text to add after every bot reply"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+            <p class="mt-1 text-sm text-gray-500">Leave empty for no suffix</p>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Rate Limiting Messages</h3>
-      <p class="section-description">Messages shown when users hit rate limits</p>
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Global System Prompt</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Global default for AI's personality and behavior.</p>
     </div>
 
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="msg_rate_limit_chat">Chat Rate Limit</label>
-        <input type="text" id="msg_rate_limit_chat" placeholder="Message when chat rate limit hit">
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="col-span-full">
+          <div class="mt-2">
+            <textarea id="system_prompt" rows="8" placeholder="Enter the system prompt..."
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6"></textarea>
+          </div>
+          <p class="mt-3 text-sm leading-6 text-gray-600">Be specific about tone, content restrictions, and desired
+            behavior. This is the fallback when guilds don't have a custom system prompt.</p>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Budget Messages</h3>
-      <p class="section-description">Messages shown when budgets are exhausted</p>
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Error & Validation Messages</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Messages shown to users when validation fails.</p>
     </div>
 
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="msg_chat_budget_user">User Chat Budget Exhausted</label>
-        <input type="text" id="msg_chat_budget_user" placeholder="Message when user chat budget exhausted">
-      </div>
-      <div class="form-group">
-        <label for="msg_chat_budget_guild">Guild Chat Budget Exhausted</label>
-        <input type="text" id="msg_chat_budget_guild" placeholder="Message when guild chat budget exhausted">
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+
+          {% for key, label, placeholder, hint in [
+          ('msg_empty_input', 'Empty Input', 'Message for empty input', ''),
+          ('msg_too_short', 'Too Short', 'Message for too short input', ''),
+          ('msg_trivial_input', 'Trivial Input', 'Message for trivial input (hi, hello, test)', ''),
+          ('msg_gibberish', 'Gibberish', 'Message for gibberish input', ''),
+          ('msg_too_long', 'Too Long', 'Message for too long input', 'Use {max_chars} for character limit'),
+          ('msg_duplicate', 'Duplicate', 'Message for duplicate requests', '')
+          ] %}
+          <div class="sm:col-span-3">
+            <label for="{{ key }}" class="block text-sm font-medium leading-6 text-gray-900">{{ label }}</label>
+            <div class="mt-2">
+              <input type="text" id="{{ key }}" placeholder="{{ placeholder }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+            {% if hint %}
+            <p class="mt-1 text-sm text-gray-500">{{ hint }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>Workflow Messages</h3>
-      <p class="section-description">Messages for approval workflow states</p>
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Rate Limiting Messages</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Messages shown when users hit rate limits.</p>
     </div>
 
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="msg_pending_approval_chat">Pending Approval</label>
-        <input type="text" id="msg_pending_approval_chat" placeholder="Message for pending chat approval">
-      </div>
-      <div class="form-group">
-        <label for="msg_manual_reply_default">Default Manual Reply</label>
-        <input type="text" id="msg_manual_reply_default" placeholder="Default admin manual reply">
-      </div>
-      <div class="form-group">
-        <label for="msg_rejection_default">Default Rejection</label>
-        <input type="text" id="msg_rejection_default" placeholder="Default rejection message">
-      </div>
-    </div>
-  </section>
-
-  <hr class="section-divider">
-
-  <section class="form-section">
-    <div class="section-header">
-      <h3>System Error Messages</h3>
-      <p class="section-description">Messages for system-level errors</p>
-    </div>
-
-    <div class="grid grid-cols-2">
-      <div class="form-group">
-        <label for="msg_ai_error_chat">AI Chat Service Error</label>
-        <input type="text" id="msg_ai_error_chat" placeholder="Message when AI chat service fails">
-      </div>
-      <div class="form-group">
-        <label for="msg_dm_not_allowed">DM Not Allowed</label>
-        <input type="text" id="msg_dm_not_allowed" placeholder="Message when command used in DM">
-      </div>
-      <div class="form-group">
-        <label for="msg_invalid_input">Invalid Input</label>
-        <input type="text" id="msg_invalid_input" placeholder="Generic invalid input message">
-      </div>
-      <div class="form-group">
-        <label for="msg_unknown_error">Unknown Error</label>
-        <input type="text" id="msg_unknown_error" placeholder="Generic error message">
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          <div class="sm:col-span-3">
+            <label for="msg_rate_limit_chat" class="block text-sm font-medium leading-6 text-gray-900">Chat Rate
+              Limit</label>
+            <div class="mt-2">
+              <input type="text" id="msg_rate_limit_chat" placeholder="Message when chat rate limit hit"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <div class="form-actions">
-    <button type="submit" class="btn">Save All Changes</button>
-    <button type="button" class="btn secondary" onclick="loadMessages()">Reset to Current Values</button>
-    <div id="status-message"></div>
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Budget Messages</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Messages shown when budgets are exhausted.</p>
+    </div>
+
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          <div class="sm:col-span-3">
+            <label for="msg_chat_budget_user" class="block text-sm font-medium leading-6 text-gray-900">User Chat Budget
+              Exhausted</label>
+            <div class="mt-2">
+              <input type="text" id="msg_chat_budget_user" placeholder="Message when user chat budget exhausted"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+          <div class="sm:col-span-3">
+            <label for="msg_chat_budget_guild" class="block text-sm font-medium leading-6 text-gray-900">Guild Chat
+              Budget Exhausted</label>
+            <div class="mt-2">
+              <input type="text" id="msg_chat_budget_guild" placeholder="Message when guild chat budget exhausted"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">Workflow Messages</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Messages for approval workflow states.</p>
+    </div>
+
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          {% for key, label, placeholder in [
+          ('msg_pending_approval_chat', 'Pending Approval', 'Message for pending chat approval'),
+          ('msg_manual_reply_default', 'Default Manual Reply', 'Default admin manual reply'),
+          ('msg_rejection_default', 'Default Rejection', 'Default rejection message')
+          ] %}
+          <div class="sm:col-span-3">
+            <label for="{{ key }}" class="block text-sm font-medium leading-6 text-gray-900">{{ label }}</label>
+            <div class="mt-2">
+              <input type="text" id="{{ key }}" placeholder="{{ placeholder }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 pt-10">
+    <div class="px-4 sm:px-0">
+      <h2 class="text-base font-semibold leading-7 text-gray-900">System Error Messages</h2>
+      <p class="mt-1 text-sm leading-6 text-gray-600">Messages for system-level errors.</p>
+    </div>
+
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
+      <div class="px-4 py-6 sm:p-8">
+        <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          {% for key, label, placeholder in [
+          ('msg_ai_error_chat', 'AI Chat Service Error', 'Message when AI chat service fails'),
+          ('msg_dm_not_allowed', 'DM Not Allowed', 'Message when command used in DM'),
+          ('msg_invalid_input', 'Invalid Input', 'Generic invalid input message'),
+          ('msg_unknown_error', 'Unknown Error', 'Generic error message')
+          ] %}
+          <div class="sm:col-span-3">
+            <label for="{{ key }}" class="block text-sm font-medium leading-6 text-gray-900">{{ label }}</label>
+            <div class="mt-2">
+              <input type="text" id="{{ key }}" placeholder="{{ placeholder }}"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+        <button type="button" onclick="loadMessages()"
+          class="text-sm font-semibold leading-6 text-gray-900">Reset</button>
+        <button type="submit"
+          class="rounded-md bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">Save
+          All Changes</button>
+      </div>
+    </div>
   </div>
 </form>
+
+<div id="notification" class="fixed bottom-4 right-4 z-50 hidden">
+  <div class="rounded-md p-4 shadow-lg">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+            clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium" id="notification-text"></p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   let currentConfig = {};
@@ -183,14 +241,14 @@
       const response = await fetch('/api/yaml-config');
       const data = await response.json();
       currentConfig = data;
-      
+
       // Bot settings
       document.getElementById('reply_prefix').value = data.bot_settings?.reply_prefix || '';
       document.getElementById('reply_suffix').value = data.bot_settings?.reply_suffix || '';
-      
+
       // System prompt
       document.getElementById('system_prompt').value = data.system_prompt || '';
-      
+
       // Messages
       const messages = data.messages || {};
       for (const [key, value] of Object.entries(messages)) {
@@ -199,7 +257,7 @@
           input.value = value;
         }
       }
-      
+
       showStatus('Configuration loaded', 'success');
     } catch (error) {
       showStatus('Error loading configuration: ' + error.message, 'error');
@@ -214,7 +272,7 @@
       'bot_settings.reply_suffix': document.getElementById('reply_suffix').value,
       'system_prompt': document.getElementById('system_prompt').value,
     };
-    
+
     // Collect all messages
     const messageKeys = [
       'empty_input', 'too_short', 'trivial_input', 'gibberish', 'too_long', 'duplicate',
@@ -222,25 +280,25 @@
       'pending_approval_chat', 'manual_reply_default', 'rejection_default',
       'ai_error_chat', 'dm_not_allowed', 'invalid_input', 'unknown_error'
     ];
-    
+
     for (const key of messageKeys) {
       const input = document.getElementById('msg_' + key);
       if (input) {
         updates['messages.' + key] = input.value;
       }
     }
-    
+
     try {
       const response = await fetch('/api/yaml-config', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates })
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to save configuration');
       }
-      
+
       const result = await response.json();
       showStatus('Configuration saved successfully!', 'success');
       currentConfig = result.config;
@@ -250,19 +308,31 @@
   }
 
   function showStatus(message, type) {
-    const statusDiv = document.getElementById('status-message');
-    statusDiv.textContent = message;
-    statusDiv.className = type;
-    
+    const notification = document.getElementById('notification');
+    const text = document.getElementById('notification-text');
+    const icon = notification.querySelector('svg');
+
+    text.textContent = message;
+    notification.classList.remove('hidden');
+
+    if (type === 'success') {
+      notification.className = 'fixed bottom-4 right-4 z-50 rounded-md bg-green-50 p-4 shadow-lg ring-1 ring-green-600/20';
+      text.className = 'text-sm font-medium text-green-800';
+      icon.className = 'h-5 w-5 text-green-400';
+    } else {
+      notification.className = 'fixed bottom-4 right-4 z-50 rounded-md bg-red-50 p-4 shadow-lg ring-1 ring-red-600/20';
+      text.className = 'text-sm font-medium text-red-800';
+      icon.className = 'h-5 w-5 text-red-400';
+    }
+
     setTimeout(() => {
-      statusDiv.textContent = '';
-      statusDiv.className = '';
+      notification.classList.add('hidden');
     }, 5000);
   }
 
   // Attach event listener
   document.getElementById('messages-form').addEventListener('submit', saveMessages);
-  
+
   // Load messages on page load
   document.addEventListener('DOMContentLoaded', loadMessages);
 </script>
