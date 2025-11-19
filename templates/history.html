@@ -5,7 +5,8 @@
 <div class="sm:flex sm:items-center">
   <div class="sm:flex-auto">
     <h1 class="text-base font-semibold leading-6 text-gray-900">Request History</h1>
-    <p class="mt-2 text-sm text-gray-700">A list of all requests processed by the bot for this guild.</p>
+    <p class="mt-2 text-sm text-gray-700">A list of all requests processed by the bot for this guild. Click on a row to
+      view details.</p>
   </div>
   <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
     <!-- Export button could go here -->
@@ -60,11 +61,14 @@
               <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
               <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Content</th>
               <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cost</th>
+              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <span class="sr-only">Expand</span>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
             {% for item in history %}
-            <tr>
+            <tr class="cursor-pointer hover:bg-gray-50" onclick="toggleHistoryDetails({{ item.id }})">
               <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">{{ item.created_at |
                 truncate(16, True, '') }}</td>
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.user_id }}</td>
@@ -84,7 +88,7 @@
                   {{ item.status }}
                 </span>
               </td>
-              <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ item.user_content }}">
+              <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
                 {{ item.user_content[:50] }}{% if item.user_content|length > 50 %}...{% endif %}
               </td>
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -94,6 +98,73 @@
                 -
                 {% endif %}
               </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
+                <svg id="icon-{{ item.id }}" class="h-5 w-5 text-gray-400 transform transition-transform duration-200"
+                  viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                    clip-rule="evenodd" />
+                </svg>
+              </td>
+            </tr>
+            <tr id="details-{{ item.id }}" class="hidden bg-gray-50">
+              <td colspan="7" class="px-4 py-4 sm:px-6">
+                <div class="rounded-md bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="col-span-2">
+                      <h4 class="text-sm font-medium text-gray-900">User Request</h4>
+                      <p class="mt-1 text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-2 rounded">{{
+                        item.user_content }}</p>
+                    </div>
+
+                    {% if item.grok_response_content %}
+                    <div class="col-span-2">
+                      <h4 class="text-sm font-medium text-gray-900">AI Response</h4>
+                      <p class="mt-1 text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-2 rounded">{{
+                        item.grok_response_content }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if item.manual_reply_content %}
+                    <div class="col-span-2">
+                      <h4 class="text-sm font-medium text-gray-900">Manual Reply</h4>
+                      <p class="mt-1 text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-2 rounded">{{
+                        item.manual_reply_content }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if item.error_detail %}
+                    <div class="col-span-2">
+                      <h4 class="text-sm font-medium text-red-700">Error Detail</h4>
+                      <p class="mt-1 text-sm text-red-600 whitespace-pre-wrap bg-red-50 p-2 rounded">{{
+                        item.error_detail }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-900">Metadata</h4>
+                      <dl class="mt-2 divide-y divide-gray-200 border-t border-gray-200 text-sm leading-6">
+                        <div class="flex justify-between py-1">
+                          <dt class="text-gray-500">Total Tokens</dt>
+                          <dd class="text-gray-900">{{ item.total_tokens or 0 }}</dd>
+                        </div>
+                        <div class="flex justify-between py-1">
+                          <dt class="text-gray-500">Prompt Tokens</dt>
+                          <dd class="text-gray-900">{{ item.prompt_tokens or 0 }}</dd>
+                        </div>
+                        <div class="flex justify-between py-1">
+                          <dt class="text-gray-500">Completion Tokens</dt>
+                          <dd class="text-gray-900">{{ item.completion_tokens or 0 }}</dd>
+                        </div>
+                        <div class="flex justify-between py-1">
+                          <dt class="text-gray-500">Decision</dt>
+                          <dd class="text-gray-900">{{ item.decision or 'N/A' }}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -102,4 +173,19 @@
     </div>
   </div>
 </div>
+
+<script>
+  function toggleHistoryDetails(id) {
+    const detailsRow = document.getElementById(`details-${id}`);
+    const icon = document.getElementById(`icon-${id}`);
+
+    if (detailsRow.classList.contains('hidden')) {
+      detailsRow.classList.remove('hidden');
+      icon.classList.add('rotate-180');
+    } else {
+      detailsRow.classList.add('hidden');
+      icon.classList.remove('rotate-180');
+    }
+  }
+</script>
 {% endblock %}

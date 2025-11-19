@@ -97,12 +97,16 @@ def create_app(settings: Settings) -> FastAPI:
         recent = await db.recent_messages(guild_id)
         usage = await db.get_usage(guild_id)
         analytics = await db.analytics(guild_id)
+        guild_info = await discord_api.get_guild(guild_id)
+        guild_name = guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
+        
         return templates.TemplateResponse(
             "overview.html",
             {
                 "request": request,
                 "page": "dashboard",
                 "guild_id": guild_id,
+                "guild_name": guild_name,
                 "config": config,
                 "pending": pending,
                 "recent": recent,
@@ -115,12 +119,15 @@ def create_app(settings: Settings) -> FastAPI:
     @app.get("/guilds/{guild_id}/config", response_class=HTMLResponse)
     async def config_page(request: Request, guild_id: str):
         config = await db.get_guild_config(guild_id)
+        guild_info = await discord_api.get_guild(guild_id)
+        guild_name = guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
         return templates.TemplateResponse(
             "config.html",
             {
                 "request": request,
                 "page": "config",
                 "guild_id": guild_id,
+                "guild_name": guild_name,
                 "config": config,
             },
         )
@@ -128,12 +135,15 @@ def create_app(settings: Settings) -> FastAPI:
     @app.get("/guilds/{guild_id}/queue", response_class=HTMLResponse)
     async def queue_page(request: Request, guild_id: str):
         pending = await db.pending_messages(guild_id)
+        guild_info = await discord_api.get_guild(guild_id)
+        guild_name = guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
         return templates.TemplateResponse(
             "queue.html",
             {
                 "request": request,
                 "page": "queue",
                 "guild_id": guild_id,
+                "guild_name": guild_name,
                 "pending": pending,
             },
         )
@@ -147,12 +157,15 @@ def create_app(settings: Settings) -> FastAPI:
         command_type: Optional[str] = None,
     ):
         history = await db.history(guild_id, limit=limit, status=status, command_type=command_type)
+        guild_info = await discord_api.get_guild(guild_id)
+        guild_name = guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
         return templates.TemplateResponse(
             "history.html",
             {
                 "request": request,
                 "page": "history",
                 "guild_id": guild_id,
+                "guild_name": guild_name,
                 "history": history,
                 "status_filter": status,
                 "command_type_filter": command_type,
@@ -164,12 +177,15 @@ def create_app(settings: Settings) -> FastAPI:
     async def analytics_page(request: Request, guild_id: str):
         analytics = await db.analytics(guild_id)
         recent_messages = await db.recent_messages(guild_id, limit=100)
+        guild_info = await discord_api.get_guild(guild_id)
+        guild_name = guild_info.get("name", f"Guild {guild_id}") if guild_info else f"Guild {guild_id}"
         return templates.TemplateResponse(
             "analytics.html",
             {
                 "request": request,
                 "page": "analytics",
                 "guild_id": guild_id,
+                "guild_name": guild_name,
                 "analytics": analytics,
                 "recent": recent_messages,
                 "model_pricing": {"prompt": processor.prompt_price_per_m_token, "completion": processor.completion_price_per_m_token, "model": settings.grok_chat_model},
